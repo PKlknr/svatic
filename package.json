@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test:watch": "nodemon -e svelte,js -x npx tap -- -Rspec --no-esm --no-cov src/**/*.test.js example/**/*.test.js",
-    "test": "tap -Rspec --no-esm index.test.js example/**/*.test.js"
+    "test": "tap -Rspec --no-esm src/**/*.test.js example/**/*.test.js"
   },
   "author": "Patrick Klöckner",
   "license": "MIT",
