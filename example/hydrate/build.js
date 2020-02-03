@@ -19,7 +19,7 @@ const main = () =>
   fs.promises
     .mkdir(destDir, {recursive: true})
     .then(() => makeHtmlWithStyle(io.map(({src}) => src)))
-    .then(r => r.map(html => injectHydratorLoader('/Index.svelte.js')(html)))
+    .then(r => r.map((html, i) => injectHydratorLoader(srcDir, io[i].src)(html)))
     .then(r =>
       Promise.all(r.map((html, i) => fs.promises.writeFile(io[i].dest, html))),
     )
