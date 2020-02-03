@@ -1,0 +1,29 @@
+{
+  "name": "svatic",
+  "version": "1.0.0",
+  "description": "Serverless SSR with svelte and snowpack",
+  "main": "index.js",
+  "scripts": {
+    "test:watch": "nodemon -e svelte,js -x npx tap -- -Rspec --no-esm --no-cov src/**/*.test.js example/**/*.test.js",
+    "test": "tap -Rspec --no-esm index.test.js example/**/*.test.js"
+  },
+  "author": "Patrick Klöckner",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.8.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-svelte3": "^2.7.3",
+    "postcss-cli": "^7.1.0",
+    "prettier": "^1.19.1",
+    "prettier-plugin-svelte": "^0.7.0",
+    "tap": "^14.10.6"
+  },
+  "dependencies": {
+    "rollup": "^1.31.0",
+    "rollup-plugin-svelte": "^5.1.1",
+    "snowpack": "^1.1.2",
+    "svelte": "file:../svelte"
+  }
+}
