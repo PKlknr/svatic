@@ -15,6 +15,8 @@ const io = [{src: 'Index.svelte', dest: 'index.html'}].map(x => ({
   dest: path.join(destDir, x.dest),
 }));
 
+const props = {lang: 'en'};
+
 const main = () =>
   fs.promises
     .mkdir(destDir, {recursive: true})
@@ -23,7 +25,7 @@ const main = () =>
         io.map(({src, dest}) =>
           fs.promises.writeFile(
             dest,
-            injectHydratorLoader(srcDir, src)(makeHtmlWithStyle(src)),
+            injectHydratorLoader(srcDir, src, props)(makeHtmlWithStyle(src, props)),
           ),
         ),
       ),

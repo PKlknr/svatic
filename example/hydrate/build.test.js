@@ -33,13 +33,19 @@ tap.test('hydrator example works', ({deepEqual, match}) =>
     .then(() =>
       fs.promises
         .readFile(path.join(__dirname, '/out/index.html'), 'utf-8')
-        .then(r =>
+        .then(r => {
           match(
             r,
             'import Hydra from \'/Index.svelte.js',
             'index.html: hydrator is imported',
-          ),
-        ),
+          );
+
+          match(
+            r,
+            /props:.*lang.*en/,
+            'props appear in index.html',
+          );
+        }),
     )
 
     .then(() =>

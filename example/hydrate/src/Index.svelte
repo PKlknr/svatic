@@ -1,8 +1,8 @@
 <script>
-
+  export let lang;
 </script>
 
-<html lang="en">
+<html lang="{lang}">
   <head></head>
   <body>
     <h1>Hello world</h1>

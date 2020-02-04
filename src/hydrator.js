@@ -10,13 +10,14 @@ const findSvelteFiles = async srcDir =>
 const transform = require('./lib/hydratorBabelTransform');
 const compileSvelteFile = require('./lib/compileSvelte');
 
-module.exports.injectHydratorLoader = (srcDir, input) =>
+module.exports.injectHydratorLoader = (srcDir, input, props) =>
   injectIntoBody(`
     <script type="module">
       import Hydra from '${destPath(srcDir, '', input)}';
         new Hydra({
           target: document,
-          hydrate: true
+          hydrate: true,
+          props: ${JSON.stringify(props)}
         });
     </script>`);
 
