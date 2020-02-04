@@ -1,6 +1,6 @@
 # svatic
 
-Svelte-based static website generator with progressive enhancement.
+Svelte and snowpack based static website generator with progressive enhancement.
 
 Inspired by [svelvet](https://github.com/jakedeichert/svelvet).
 
@@ -14,8 +14,7 @@ if you have any questions/comments/complaints.
 See [example/purHtml](https://github.com/PKlknr/svatic/tree/master/example/pureHtml)
 
 We include the whole html-document in a Svelte-component,
-so we don't need to crawl a site. Uses rollup-plugin-svelte to generate
-html intended for SSR.
+so we don't need to crawl a site.
 
 Note: This depends on https://github.com/sveltejs/svelte/pull/4309
 
