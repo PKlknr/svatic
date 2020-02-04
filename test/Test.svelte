@@ -1,5 +1,6 @@
 <script>
   const x = 'world';
+  export let lang;
 </script>
 
 <style>
@@ -8,9 +9,10 @@
   }
 </style>
 
-<html lang="en">
+<html lang="{lang}">
   <head></head>
   <body>
     <p class="bold">Hello {x}</p>
   </body>
+<img src="/"/>
 </html>

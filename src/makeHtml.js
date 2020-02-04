@@ -5,16 +5,15 @@ require('svelte/register')({
   dev: true,
 });
 
-const renderHtml = filename => {
+const renderHtml = (input, props) => {
   /* eslint-disable-next-line global-require */
-  const Comp = relative(filename, process.cwd()).default;
-  return Comp.render();
+  const Comp = relative(input, process.cwd()).default;
+  return Comp.render(props);
 };
 
-module.exports.makeHtmlWithStyle = filename => {
-  const rendered = renderHtml(filename);
+module.exports.makeHtmlWithStyle = (filename, props) => {
+  const rendered = renderHtml(filename, props);
   return injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(
     rendered.html,
   );
-  return rendered;
 };
