@@ -14,12 +14,13 @@ const io = [
 const main = () =>
   fs.promises
     .mkdir(path.join(__dirname, 'out'), {recursive: true})
-    .then(() => makeHtmlWithStyle(io.map(({src}) => src)))
 
-    // .then(r => console.log(r) || r)
-
-    .then(r =>
-      Promise.all(r.map((html, i) => fs.promises.writeFile(io[i].dest, html))),
+    .then(() =>
+      Promise.all(
+        makeHtmlWithStyle(io.map(({src}) => src)).map((html, i) =>
+          fs.promises.writeFile(io[i].dest, html),
+        ),
+      ),
     );
 
 if (require.main === module) {

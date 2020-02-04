@@ -21,8 +21,7 @@
     "tap": "^14.10.6"
   },
   "dependencies": {
-    "rollup": "^1.31.0",
-    "rollup-plugin-svelte": "^5.1.1",
+    "require-relative": "^0.8.7",
     "snowpack": "^1.1.2",
     "svelte": "file:../svelte"
   }
