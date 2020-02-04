@@ -17,8 +17,8 @@ const main = () =>
 
     .then(() =>
       Promise.all(
-        makeHtmlWithStyle(io.map(({src}) => src)).map((html, i) =>
-          fs.promises.writeFile(io[i].dest, html),
+        io.map(({src, dest}) =>
+          fs.promises.writeFile(dest, makeHtmlWithStyle(src)),
         ),
       ),
     );
