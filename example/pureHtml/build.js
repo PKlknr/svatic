@@ -1,4 +1,4 @@
-const {makeHtmlWithStyle} = require('../..');
+const {build} = require('../..');
 
 const path = require('path');
 const fs = require('fs');
@@ -9,6 +9,7 @@ const pageMap = [
 ];
 
 const srcDir = path.join(__dirname, 'src');
+const tmpDir = path.join(__dirname, 'tmp');
 const destDir = path.join(__dirname, 'out');
 
 const main = () =>
@@ -16,14 +17,12 @@ const main = () =>
     .mkdir(destDir, {recursive: true})
 
     .then(() =>
-      Promise.all(
-        pageMap.map(({src, dest}) =>
-          fs.promises.writeFile(
-            path.join(destDir, dest),
-            makeHtmlWithStyle(srcDir, src),
-          ),
-        ),
-      ),
+      build({
+        srcDir,
+        tmpDir,
+        destDir,
+        pageMap,
+      }),
     );
 
 if (require.main === module) {

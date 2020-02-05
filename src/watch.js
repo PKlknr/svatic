@@ -1,47 +1,12 @@
 const path = require('path');
-const fs = require('fs');
 const chokidar = require('chokidar');
 const {buildImportMap} = require('./lib/lex');
 
-const {makeHtmlWithStyle} = require('./makeHtml');
-
-const {
-  injectHydratorLoader,
-  makeHydrators,
-  runSnowpack,
-} = require('./hydrator');
+const {build, runSnowpack} = require('./build');
+const {makeHydrators} = require('./hydrator');
 
 const {maybeLog} = require('./lib');
-
-const renderHtmlPage = (srcDir, destDir, src, dest, hydratable) => {
-  const html = makeHtmlWithStyle(srcDir, src);
-  const h2 = hydratable ? injectHydratorLoader(srcDir, src)(html) : html;
-  maybeLog('renderOne writes', path.join(destDir, dest));
-  return fs.promises.writeFile(path.join(destDir, dest), h2);
-};
-
-const runAllHooks = hooks =>
-  Promise.all(hooks.map(hook => maybeLog('>>> HOOK') || hook.task()))
-
-const fullBuild = ({
-  srcDir = './src',
-  tmpDir = './tmp',
-  destDir = './dist',
-  pageMap,
-  hooks,
-} = {}) =>
-  runAllHooks(hooks)
-    .then(() =>
-      Promise.all(
-        pageMap.map(({src, dest, hydratable}) =>
-          renderHtmlPage(srcDir, destDir, src, dest, hydratable),
-        ),
-      ),
-    )
-    .then(() => makeHydrators(srcDir, tmpDir, destDir))
-    .then(() => runSnowpack(tmpDir, destDir));
-
-module.exports.build = fullBuild;
+const {renderPage} = require('./render');
 
 const maybeSnowpack = (tmpDir, destDir, pageMap) =>
   buildImportMap(
@@ -86,15 +51,13 @@ const handlePageChange = (srcDir, tmpDir, destDir, page) =>
   // When a page changes, we must
   // * render the html
   // * and the hydrator of that page
-  renderHtmlPage(srcDir, destDir, page.src, page.dest, page.hydratable).then(
-    () => {
-      if (page.hydratable) {
-        return makeHydrators(srcDir, tmpDir, destDir, [
-          path.join(srcDir, page.src),
-        ]);
-      }
-    },
-  );
+  renderPage(srcDir, destDir, page.src, page.dest, page.hydratable).then(() => {
+    if (page.hydratable) {
+      return makeHydrators(srcDir, tmpDir, destDir, [
+        path.join(srcDir, page.src),
+      ]);
+    }
+  });
 
 const handleComponentChange = (
   srcDir,
@@ -109,7 +72,7 @@ const handleComponentChange = (
   // * and the hydrator for this component
   Promise.all(
     findTouchedPages(importMap, pageMap, relToSrc).map(page =>
-      renderHtmlPage(srcDir, destDir, page.src, page.dest, page.hydratable),
+      renderPage(srcDir, destDir, page.src, page.dest, page.hydratable),
     ),
   ).then(() =>
     makeHydrators(srcDir, tmpDir, destDir, [path.join(srcDir, relToSrc)]),
@@ -120,7 +83,6 @@ const makeQueue = () => {
   let busy = false;
 
   const run = () => {
-    console.log('XX', busy);
     if (!q.length) {
       return;
     }
@@ -149,7 +111,7 @@ module.exports.watch = ({
   tmpDir = './tmp',
   destDir = './dist',
   pageMap,
-  hooks,
+  hooks = [],
 } = {}) => {
   let importMap;
 
@@ -181,7 +143,7 @@ module.exports.watch = ({
   };
   const queue = makeQueue();
 
-  fullBuild({srcDir, tmpDir, destDir, pageMap, hooks})
+  build({srcDir, tmpDir, destDir, pageMap, hooks})
     .then(() =>
       buildImportMap(
         destDir,

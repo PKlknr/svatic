@@ -1,4 +1,4 @@
-const {injectIntoHead, maybeLog} = require('./lib');
+const {injectIntoHead, maybeLog} = require('.');
 const relative = require('require-relative');
 const path = require('path');
 
@@ -9,7 +9,7 @@ require('svelte/register')({
 // require look inside node_modules when path does not start with / or ./
 const requireablePath = p => (!path.isAbsolute(p) ? './' : '') + p;
 
-const renderHtml = (srcDir, filename, props) => {
+const renderSvelte = (srcDir, filename, props) => {
   const mod = relative.resolve(
     requireablePath(path.join(srcDir, filename)),
     process.cwd(),
@@ -20,10 +20,12 @@ const renderHtml = (srcDir, filename, props) => {
   return Comp.render(props);
 };
 
-module.exports.makeHtmlWithStyle = (srcDir, filename, props) => {
+const renderSvelteWithStyle = (srcDir, filename, props) => {
   maybeLog('makeHtmlWithStyle', srcDir, filename, props);
-  const rendered = renderHtml(srcDir, filename, props);
+  const rendered = renderSvelte(srcDir, filename, props);
   return injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(
     rendered.html,
   );
 };
+
+module.exports.renderSvelteWithStyle = renderSvelteWithStyle;
