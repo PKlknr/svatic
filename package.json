@@ -21,6 +21,7 @@
     "tap": "^14.10.6"
   },
   "dependencies": {
+    "es-module-lexer": "^0.3.13",
     "require-relative": "^0.8.7",
     "snowpack": "^1.1.2",
     "svelte": "file:../svelte"

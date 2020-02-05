@@ -2,18 +2,17 @@ const {
   makeHtmlWithStyle,
   injectHydratorLoader,
   makeHydrators,
+  runSnowpack,
 } = require('../..');
 
 const path = require('path');
 const fs = require('fs');
 
-const srcDir = path.join(__dirname, 'src');
-const destDir = path.join(__dirname, 'out');
+const pageMap = [{src: 'Index.svelte', dest: 'index.html'}];
 
-const io = [{src: 'Index.svelte', dest: 'index.html'}].map(x => ({
-  src: path.join(srcDir, x.src),
-  dest: path.join(destDir, x.dest),
-}));
+const srcDir = path.join(__dirname, 'src');
+const tmpDir = path.join(__dirname, 'tmp');
+const destDir = path.join(__dirname, 'out');
 
 const props = {lang: 'en'};
 
@@ -22,19 +21,25 @@ const main = () =>
     .mkdir(destDir, {recursive: true})
     .then(() =>
       Promise.all(
-        io.map(({src, dest}) =>
+        pageMap.map(({src, dest}) =>
           fs.promises.writeFile(
-            dest,
-            injectHydratorLoader(srcDir, src, props)(makeHtmlWithStyle(src, props)),
+            path.join(destDir, dest),
+            injectHydratorLoader(
+              srcDir,
+              src,
+              props,
+            )(makeHtmlWithStyle(srcDir, src, props)),
           ),
         ),
       ),
     )
 
-    .then(() => makeHydrators(srcDir, destDir));
+    .then(() => makeHydrators(srcDir, tmpDir, destDir))
+    .then(() => runSnowpack(tmpDir, destDir))
+;
 
 if (require.main === module) {
   main();
 } else {
-  module.exports = {build: main, io};
+  module.exports = {build: main, pageMap, srcDir, destDir};
 }

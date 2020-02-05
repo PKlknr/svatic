@@ -4,8 +4,11 @@ const fs = require('fs');
 const path = require('path');
 
 const glob = require('glob');
+
 const findSvelteFiles = async srcDir =>
-  glob.sync(srcDir + '/**/!(*+(spec|test)).+(svelte)', {nodir: true});
+  glob
+    .sync(srcDir + '/**/!(*+(spec|test)).+(svelte)', {nodir: true})
+    .map(x => path.normalize(x));
 
 const transform = require('./lib/hydratorBabelTransform');
 const compileSvelteFile = require('./lib/compileSvelte');
@@ -13,7 +16,7 @@ const compileSvelteFile = require('./lib/compileSvelte');
 module.exports.injectHydratorLoader = (srcDir, input, props) =>
   injectIntoBody(`
     <script type="module">
-      import Hydra from '${destPath(srcDir, '', input)}';
+      import Hydra from '${path.join('/', input)}.js';
         new Hydra({
           target: document,
           hydrate: true,
@@ -22,7 +25,7 @@ module.exports.injectHydratorLoader = (srcDir, input, props) =>
     </script>`);
 
 const destPath = (srcDir, destDir, input) =>
-  destDir + input.substr(srcDir.length) + '.js';
+  path.join(destDir, input.substr(path.normalize(srcDir).length)) + '.js';
 
 const svelteCompileAndWriteAll = (srcDir, destDir, inputs) =>
   Promise.all(
@@ -35,36 +38,39 @@ const svelteCompileAndWriteAll = (srcDir, destDir, inputs) =>
     ),
   );
 
-const runSnowpack = destDir =>
+const runSnowpack = (tmpDir, destDir) =>
   snowpack({
-    include: path.join(destDir + '/**/*'),
+    include: path.join(tmpDir + '/**/*'),
     dest: path.join(destDir, 'web_modules'),
   });
+
+module.exports.runSnowpack = runSnowpack;
 
 const transformAndRewriteAll = (srcDir, destDir, inputs, code) =>
   Promise.all(
     code.map((code, i) =>
       transform(code).then(
         transformed =>
-          maybeLog('Writing hydrator', inputs[i], transformed) ||
+          maybeLog('Writing hydrator', inputs[i]) ||
           writeOutputFile(destPath(srcDir, destDir, inputs[i]), transformed),
       ),
     ),
   );
 
-module.exports.makeHydrators = (srcDir, destDir) =>
+// we need tmpdir because snowpack would fail to run after transformation
+// (cannot find svelte/internal.js
+module.exports.makeHydrators = (srcDir, tmpDir, destDir, inputs) =>
   // This compiles every Svelte-component.
   // TODO: Find a way to only compile those actually needed.
-  // Maybe the rollup-step from makeHtml can tell us.
-  findSvelteFiles(srcDir).then(inputs =>
-    svelteCompileAndWriteAll(srcDir, destDir, inputs).then(compiled =>
-      runSnowpack(destDir).then(() =>
-        transformAndRewriteAll(srcDir, destDir, inputs, compiled),
-      ),
+  maybeLog('makeHydrators', srcDir, tmpDir, destDir, inputs) ||
+  (inputs ? Promise.resolve(inputs) : findSvelteFiles(srcDir)).then(inputs =>
+    svelteCompileAndWriteAll(srcDir, tmpDir, inputs).then(compiled =>
+      transformAndRewriteAll(tmpDir, destDir, inputs, compiled),
     ),
   );
 
 const writeOutputFile = (destPath, content) =>
+  maybeLog('writeOutputFile', destPath) ||
   fs.promises
     .mkdir(path.dirname(destPath), {recursive: true})
     .then(() => fs.promises.writeFile(destPath, content));

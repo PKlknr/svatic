@@ -1,9 +1,12 @@
 const tap = require('tap');
-const {build, io} = require('./build.js');
+const {build, pageMap, destDir} = require('./build.js');
 const fs = require('fs');
+const path = require('path');
 
 const cleanOut = () =>
-  Promise.all(io.map(({dest}) => fs.promises.unlink(dest))).catch(err => {
+  Promise.all(
+    pageMap.map(({dest}) => fs.promises.unlink(path.join(destDir, dest))),
+  ).catch(err => {
     if (err.code !== 'ENOENT') {
       console.log('Cannot remove outfile', err);
       throw err;
@@ -13,7 +16,7 @@ const cleanOut = () =>
 tap.test('pureHtml example works', ({match, notMatch}) =>
   cleanOut()
     .then(build)
-    .then(() => fs.promises.readFile(io[0].dest, 'utf-8'))
+    .then(() => fs.promises.readFile(path.join(destDir, pageMap[0].dest), 'utf-8'))
     .then(renderedHtml => {
       // console.log(renderedHtml)
       match(renderedHtml, /<footer/, 'contains footer');
