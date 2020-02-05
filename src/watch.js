@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
+const {buildImportMap} = require('./lib/lex');
 
 const {makeHtmlWithStyle} = require('./makeHtml');
 
@@ -12,21 +13,35 @@ const {
 
 const {maybeLog} = require('./lib');
 
-const renderOne = (srcDir, destDir, src, dest, hydratable) => {
+const renderHtmlPage = (srcDir, destDir, src, dest, hydratable) => {
   const html = makeHtmlWithStyle(srcDir, src);
   const h2 = hydratable ? injectHydratorLoader(srcDir, src)(html) : html;
   maybeLog('renderOne writes', path.join(destDir, dest));
   return fs.promises.writeFile(path.join(destDir, dest), h2);
 };
 
-const fullBuild = (srcDir, tmpDir, destDir, pageMap) =>
-  Promise.all(
-    pageMap.map(({src, dest, hydratable}) =>
-      renderOne(srcDir, destDir, src, dest, hydratable),
-    ),
-  )
+const runAllHooks = hooks =>
+  Promise.all(hooks.map(hook => maybeLog('>>> HOOK') || hook.task()))
+
+const fullBuild = ({
+  srcDir = './src',
+  tmpDir = './tmp',
+  destDir = './dist',
+  pageMap,
+  hooks,
+} = {}) =>
+  runAllHooks(hooks)
+    .then(() =>
+      Promise.all(
+        pageMap.map(({src, dest, hydratable}) =>
+          renderHtmlPage(srcDir, destDir, src, dest, hydratable),
+        ),
+      ),
+    )
     .then(() => makeHydrators(srcDir, tmpDir, destDir))
     .then(() => runSnowpack(tmpDir, destDir));
+
+module.exports.build = fullBuild;
 
 const maybeSnowpack = (tmpDir, destDir, pageMap) =>
   buildImportMap(
@@ -46,7 +61,6 @@ const maybeSnowpack = (tmpDir, destDir, pageMap) =>
     }
   });
 
-const {buildImportMap} = require('./lib/lex');
 const bustRequireCache = srcDir => {
   const cabef = Object.keys(require.cache).length;
   Object.keys(require.cache)
@@ -72,13 +86,15 @@ const handlePageChange = (srcDir, tmpDir, destDir, page) =>
   // When a page changes, we must
   // * render the html
   // * and the hydrator of that page
-  renderOne(srcDir, destDir, page.src, page.dest, page.hydratable).then(() => {
-    if (page.hydratable) {
-      return makeHydrators(srcDir, tmpDir, destDir, [
-        path.join(srcDir, page.src),
-      ]);
-    }
-  });
+  renderHtmlPage(srcDir, destDir, page.src, page.dest, page.hydratable).then(
+    () => {
+      if (page.hydratable) {
+        return makeHydrators(srcDir, tmpDir, destDir, [
+          path.join(srcDir, page.src),
+        ]);
+      }
+    },
+  );
 
 const handleComponentChange = (
   srcDir,
@@ -93,69 +109,79 @@ const handleComponentChange = (
   // * and the hydrator for this component
   Promise.all(
     findTouchedPages(importMap, pageMap, relToSrc).map(page =>
-      renderOne(srcDir, destDir, page.src, page.dest, page.hydratable),
+      renderHtmlPage(srcDir, destDir, page.src, page.dest, page.hydratable),
     ),
   ).then(() =>
     makeHydrators(srcDir, tmpDir, destDir, [path.join(srcDir, relToSrc)]),
   );
 
-module.exports = (srcDir, tmpDir, destDir, pageMap) => {
+const makeQueue = () => {
+  let q = [];
+  let busy = false;
+
+  const run = () => {
+    console.log('XX', busy);
+    if (!q.length) {
+      return;
+    }
+    if (!busy) {
+      busy = true;
+      const f = q[0];
+      q = q.slice(1);
+      f()
+        .then(() => (busy = false))
+        .catch(e => {
+          console.error('E', e);
+          busy = false;
+        })
+        .then(run);
+    }
+  };
+
+  return filename => {
+    q = [...q, filename];
+    run();
+  };
+};
+
+module.exports.watch = ({
+  srcDir = './src',
+  tmpDir = './tmp',
+  destDir = './dist',
+  pageMap,
+  hooks,
+} = {}) => {
   let importMap;
-  const queue = (() => {
-    let q = [];
-    let busy = false;
 
-    const run = () => {
-      if (!busy) {
-        const f = q[0];
-        q = q.slice(1);
-        handleFile(srcDir, tmpDir, destDir, pageMap, f)
-          .then(() => (busy = false))
-          .catch(e => {
-            console.error('E', e);
-            busy = false;
-          });
-      }
-    };
-
-    return filename => {
-      q = [...q, filename];
-      run();
-    };
-  })();
-
-  const handleFile = (srcDir, tmpDir, destDir, pageMap, p) => {
+  const handleFile = (srcDir, tmpDir, destDir, pageMap) => p => {
     const relToSrc = toSrcPath(srcDir, p);
     if (relToSrc) {
       maybeLog('  IS SRC', relToSrc);
 
       const page = findPageBySrcPath(pageMap, relToSrc);
       bustRequireCache(srcDir);
-
-      if (page) {
-        maybeLog('  >>> A PAGE');
-        return handlePageChange(srcDir, tmpDir, destDir, page)
-          .then(() => maybeSnowpack(tmpDir, destDir, pageMap))
-          .then(m => (importMap = m));
-      } else {
-        maybeLog('  >>> NOT A PAGE');
-        return handleComponentChange(
-          srcDir,
-          tmpDir,
-          destDir,
-          pageMap,
-          importMap,
-          relToSrc,
-        )
-          .then(() => maybeSnowpack(tmpDir, destDir, pageMap))
-          .then(m => (importMap = m));
-      }
+      return (page
+        ? maybeLog('  >>> A PAGE') ||
+          handlePageChange(srcDir, tmpDir, destDir, page)
+        : maybeLog('  >>> NOT A PAGE') ||
+          handleComponentChange(
+            srcDir,
+            tmpDir,
+            destDir,
+            pageMap,
+            importMap,
+            relToSrc,
+          )
+      )
+        .then(() => maybeSnowpack(tmpDir, destDir, pageMap))
+        .then(m => (importMap = m));
     } else {
       return Promise.resolve();
     }
   };
+  const queue = makeQueue();
 
-  fullBuild(srcDir, tmpDir, destDir, pageMap)
+  fullBuild({srcDir, tmpDir, destDir, pageMap, hooks})
     .then(() =>
       buildImportMap(
         destDir,
@@ -173,7 +199,16 @@ module.exports = (srcDir, tmpDir, destDir, pageMap) => {
         })
         .on('all', (event, p) => {
           maybeLog('file event', event, p);
-          queue(p);
+
+          hooks
+            .filter(x => x.filter && x.filter(p))
+            .forEach(hook => {
+              console.log('PP RUN HOOK');
+              queue(hook.task);
+            });
+          if (p.endsWith('.svelte')) {
+            queue(() => handleFile(srcDir, tmpDir, destDir, pageMap)(p));
+          }
         });
     });
 };

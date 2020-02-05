@@ -1,5 +1,5 @@
 const {makeHtmlWithStyle} = require('./src/makeHtml.js');
-const watch = require('./src/watch');
+const {watch, build} = require('./src/watch');
 const {
   injectHydratorLoader,
   makeHydrators,
@@ -12,4 +12,5 @@ module.exports = {
   makeHydrators,
   runSnowpack,
   watch,
+  build,
 };
