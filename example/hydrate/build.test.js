@@ -1,10 +1,10 @@
 const tap = require('tap');
-const {build, io} = require('./build.js');
+const {build, destDir} = require('./build.js');
 const fs = require('fs');
 const glob = require('glob');
 const path = require('path');
 
-const findOutputFiles = () => glob.sync(__dirname + '/out/**/*', {nodir: true});
+const findOutputFiles = () => glob.sync(destDir + '/**/*', {nodir: true});
 
 const cleanOut = () =>
   Promise.all(findOutputFiles().map(fs.promises.unlink)).catch(err => {
@@ -40,11 +40,7 @@ tap.test('hydrator example works', ({deepEqual, match}) =>
             'index.html: hydrator is imported',
           );
 
-          match(
-            r,
-            /props:.*lang.*en/,
-            'props appear in index.html',
-          );
+          match(r, /props:.*lang.*en/, 'props appear in index.html');
         }),
     )
 

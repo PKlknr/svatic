@@ -15,7 +15,6 @@ module.exports = ({
   optimize = false,
   include = 'out/**/*',
   dest = 'out/web_modules',
-
 } = {}) =>
   exec(
     `${snowpackLocation} --include '${include}' --dest ${dest} ${
@@ -29,3 +28,5 @@ module.exports = ({
       console.log(stderr);
     }
   });
+
+

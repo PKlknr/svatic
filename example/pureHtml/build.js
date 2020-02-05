@@ -1,30 +1,32 @@
-const {makeHtmlWithStyle} = require('../..');
+const {build} = require('../..');
 
 const path = require('path');
 const fs = require('fs');
 
-const io = [
+const pageMap = [
   {src: 'Index.svelte', dest: 'index.html'},
   {src: 'About.svelte', dest: 'about.html'},
-].map(x => ({
-  src: path.join(__dirname, 'src', x.src),
-  dest: path.join(__dirname, 'out', x.dest),
-}));
+];
+
+const srcDir = path.join(__dirname, 'src');
+const tmpDir = path.join(__dirname, 'tmp');
+const destDir = path.join(__dirname, 'out');
 
 const main = () =>
   fs.promises
-    .mkdir(path.join(__dirname, 'out'), {recursive: true})
+    .mkdir(destDir, {recursive: true})
 
     .then(() =>
-      Promise.all(
-        io.map(({src, dest}) =>
-          fs.promises.writeFile(dest, makeHtmlWithStyle(src)),
-        ),
-      ),
+      build({
+        srcDir,
+        tmpDir,
+        destDir,
+        pageMap,
+      }),
     );
 
 if (require.main === module) {
   main();
 } else {
-  module.exports = {build: main, io};
+  module.exports = {build: main, pageMap, srcDir, destDir};
 }
