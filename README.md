@@ -10,13 +10,13 @@ if you have any questions/comments/complaints.
 
 ## But Why?
 Now and then I have to build a mostly static website that does not need a fancy server.
-It feels wrong to serve an empty html shell only to load a script that builds the DOM.
+It seems wrong to serve an empty html shell only to load a script that builds the DOM.
 
 Existing generators are a bit too powerful/opinionated for those jobs.
 * Sapper is great and I use it a lot. It can export static sites.
 But it's a bit too powerful when I just need to build a simple website.
 * Snowpack seems like a good idea - ditch the bundler and rely on current browsers
-that support ESM import. With svatic I get to show old browsers something and
+that support ESM. With svatic I get to show old browsers something and
 progressively enhance in modern ones.
 * I can't stand waiting for a bundler to finish.
 * I just love svelte and would like to use it as a templating language.
@@ -24,7 +24,8 @@ progressively enhance in modern ones.
 
 ## Goals
 * Svelte-only. Not html wrappers needed.
-* Faster than the alternatives in dev mode.
+* Fast!
+* No crawling needed.
 * As simple as possible, as flexible as necessary.
 
 
@@ -38,7 +39,6 @@ It's **fast**!
 ```js
 const {watch, build} = require('svatic');
 
-// use build to build once. build and watch take the same options
 watch({
   pageMap: [
     {src: 'Index.svelte', dest: 'index.html'},
@@ -71,9 +71,9 @@ const images = () =>
   sh('cp', ['-ruv', 'src/img/*', `${destDir}/img/`], {shell: true});
 
 watch({
-  srcDir,  // pageMap.src is relative to this
-  tmpDir,  // see [#6](https://github.com/PKlknr/svatic/issues/6)
-  destDir, // write here
+  srcDir,  // (./src)  - pageMap.src is relative to this
+  tmpDir,  // (./tmp)  - see [#6](https://github.com/PKlknr/svatic/issues/6)
+  destDir, // (./dist) - write here
   pageMap, // don't want to dictate a structure. May accept function in the future
 
   // hooks: All hooks are run on start. When watching, hooks are run when
