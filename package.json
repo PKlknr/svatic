@@ -23,6 +23,7 @@
   "dependencies": {
     "es-module-lexer": "^0.3.13",
     "require-relative": "^0.8.7",
+    "servor": "github:PKlknr/servor#for-svatic",
     "snowpack": "^1.1.2",
     "svelte": "file:../svelte"
   }

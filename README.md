@@ -30,16 +30,16 @@ progressively enhance in modern ones.
 
 
 ## Usage
-watch and build take the same options.
+watch and build take the same options. serve takes additional servorOptions.
 
 watch will only rebuild changed files or files that depend on them.
 It's **fast**!
 
 ### Basic
 ```js
-const {watch, build} = require('svatic');
+const {watch, build, serve} = require('svatic');
 
-watch({
+serve({
   pageMap: [
     {src: 'Index.svelte', dest: 'index.html'},
     {src: 'Privacy.svelte', dest: 'privacy.html', hydratable: true},
@@ -70,7 +70,7 @@ const buildTailwind = () =>
 const images = () =>
   sh('cp', ['-ruv', 'src/img/*', `${destDir}/img/`], {shell: true});
 
-watch({
+serve({
   srcDir,  // (./src)  - pageMap[].src is relative to this
   tmpDir,  // (./tmp)  - see [#6](https://github.com/PKlknr/svatic/issues/6)
   destDir, // (./dist) - write here
@@ -86,6 +86,9 @@ watch({
   ],
 
   afterBuild, // (noop) - function that is called after each build
+
+  // servorOptions are passed to servor
+  servorOptions: {port: 3000},
 });
 ```
 
