@@ -46,7 +46,7 @@ module.exports.injectHydratorLoader = (input, props) =>
     <script type="module">
       import Hydra from '${path.join('/', input)}.js';
         new Hydra({
-          target: document,
+          target: document.body,
           hydrate: true,
           props: ${JSON.stringify(props)}
         });
