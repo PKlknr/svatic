@@ -71,7 +71,7 @@ const images = () =>
   sh('cp', ['-ruv', 'src/img/*', `${destDir}/img/`], {shell: true});
 
 watch({
-  srcDir,  // (./src)  - pageMap.src is relative to this
+  srcDir,  // (./src)  - pageMap[].src is relative to this
   tmpDir,  // (./tmp)  - see [#6](https://github.com/PKlknr/svatic/issues/6)
   destDir, // (./dist) - write here
   pageMap, // don't want to dictate a structure. May accept function in the future
@@ -84,6 +84,8 @@ watch({
     {filter: filename => filename.endsWith('.css'), task: buildTailwind},
     {filter: filename => filename.includes('src/img'), task: images},
   ],
+
+  afterBuild, // (noop) - function that is called after each build
 });
 ```
 

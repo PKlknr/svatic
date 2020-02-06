@@ -23,11 +23,13 @@ const build = ({
   destDir = './dist',
   pageMap,
   hooks = [],
+  afterBuild = () => {},
 } = {}) =>
   runAllHooks(hooks)
     .then(() => renderHtmlPagesInMap(srcDir, destDir, pageMap))
     .then(() => makeHydrators(srcDir, tmpDir, destDir))
-    .then(() => runSnowpack(tmpDir, destDir));
+    .then(() => runSnowpack(tmpDir, destDir))
+    .then(afterBuild);
 
 module.exports = {
   runSnowpack,

@@ -78,7 +78,7 @@ const handleComponentChange = (
     makeHydrators(srcDir, tmpDir, destDir, [path.join(srcDir, relToSrc)]),
   );
 
-const makeQueue = () => {
+const makeQueue = onFinish => {
   let q = [];
   let busy = false;
 
@@ -86,23 +86,28 @@ const makeQueue = () => {
     if (!q.length) {
       return;
     }
-    if (!busy) {
-      busy = true;
-      const f = q[0];
-      q = q.slice(1);
-      f()
-        .then(() => (busy = false))
-        .catch(e => {
-          console.error('E', e);
+    busy = true;
+    const f = q[0];
+    q = q.slice(1);
+    f()
+      .catch(e => {
+        console.error('E', e);
+      })
+      .then(() => {
+        if (q.length) {
+          run();
+        } else {
           busy = false;
-        })
-        .then(run);
-    }
+          onFinish();
+        }
+      });
   };
 
   return filename => {
     q = [...q, filename];
-    run();
+    if (!busy) {
+      run();
+    }
   };
 };
 
@@ -112,6 +117,7 @@ module.exports.watch = ({
   destDir = './dist',
   pageMap,
   hooks = [],
+  afterBuild = () => {},
 } = {}) => {
   let importMap;
 
@@ -141,9 +147,9 @@ module.exports.watch = ({
       return Promise.resolve();
     }
   };
-  const queue = makeQueue();
+  const queue = makeQueue(afterBuild);
 
-  build({srcDir, tmpDir, destDir, pageMap, hooks})
+  build({srcDir, tmpDir, destDir, pageMap, hooks, afterBuild})
     .then(() =>
       buildImportMap(
         destDir,
