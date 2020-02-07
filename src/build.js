@@ -3,6 +3,8 @@ const {runAllHooks} = require('./lib/hooks');
 const {renderPage} = require('./render');
 const snowpack = require('./lib/snowpack');
 const {makeHydrators} = require('./hydrator');
+const glob = require('glob');
+const minify = require('./lib/minify');
 
 const renderHtmlPagesInMap = (srcDir, destDir, pageMap) =>
   Promise.all(
@@ -13,9 +15,17 @@ const renderHtmlPagesInMap = (srcDir, destDir, pageMap) =>
 
 const runSnowpack = (tmpDir, destDir) =>
   snowpack({
+    optimize: process.env.NODE_ENV === 'production',
     include: path.join(tmpDir + '/**/*'),
     dest: path.join(destDir, 'web_modules'),
   });
+
+const maybeMinify = destDir =>
+  process.env.NODE_ENV === 'production'
+    ? glob
+      .sync(destDir + '/**/!(*+(spec|test)).+(js|mjs|svelte)', {nodir: true})
+      .map(minify)
+    : null;
 
 const build = ({
   srcDir = './src',
@@ -29,6 +39,7 @@ const build = ({
     .then(() => renderHtmlPagesInMap(srcDir, destDir, pageMap))
     .then(() => makeHydrators(srcDir, tmpDir, destDir))
     .then(() => runSnowpack(tmpDir, destDir))
+    .then(() => maybeMinify(destDir))
     .then(afterBuild);
 
 module.exports = {
