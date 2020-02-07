@@ -44,7 +44,14 @@ const build = ({
     .then(() => makeHydrators(srcDir, tmpDir, destDir))
     .then(() => runSnowpack(tmpDir, destDir))
     .then(() => maybeMinify(destDir))
-    .then(afterBuild);
+    .then(afterBuild)
+    .catch(e => {
+      console.log(e);
+      if (e.frame) {
+        console.log(e.frame);
+      }
+      console.log('\n\nBuild failed\n\n');
+    });
 
 module.exports = {
   runSnowpack,
