@@ -1,6 +1,3 @@
-const {maybeLog} = require('.');
-
-const runAllHooks = hooks =>
-  Promise.all(hooks.map(hook => maybeLog('>>> HOOK') || hook.task()));
+const runAllHooks = hooks => Promise.all(hooks.map(hook => hook.task()));
 
 module.exports.runAllHooks = runAllHooks;

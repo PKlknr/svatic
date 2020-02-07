@@ -1,5 +1,7 @@
 const {watch} = require('./watch');
 const servor = require('servor');
+const fs = require('fs');
+const path = require('path');
 
 const devServor = async opts => {
   const inst = await servor(opts);
@@ -25,18 +27,20 @@ module.exports.serve = ({
   afterBuild = () => {},
   servorOptions = {},
 } = {}) => {
-  devServor({root: destDir, ...servorOptions}).then(reload =>
-    watch({
-      srcDir,
-      tmpDir,
-      destDir,
-      pageMap,
-      hooks,
+  fs.promises.mkdir(destDir, {recursive: true}).then(() =>
+    devServor({root: destDir, ...servorOptions}).then(reload =>
+      watch({
+        srcDir,
+        tmpDir,
+        destDir,
+        pageMap,
+        hooks,
 
-      afterBuild: () => {
-        afterBuild();
-        reload();
-      },
-    }),
+        afterBuild: () => {
+          afterBuild();
+          reload();
+        },
+      }),
+    ),
   );
 };

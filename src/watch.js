@@ -4,9 +4,9 @@ const {buildImportMap} = require('./lib/lex');
 
 const {build, runSnowpack} = require('./build');
 const {makeHydrators} = require('./hydrator');
-
-const {maybeLog} = require('./lib');
 const {renderPage} = require('./render');
+
+const logError = require('./lib/logError');
 
 const maybeSnowpack = (tmpDir, destDir, pageMap) =>
   buildImportMap(
@@ -14,7 +14,7 @@ const maybeSnowpack = (tmpDir, destDir, pageMap) =>
     pageMap.map(({src}) => src),
   ).catch(e => {
     if (e.code === 'ENOENT') {
-      maybeLog('NEW DEP');
+      console.log('new dependency - running snowpack');
       return runSnowpack(tmpDir, destDir).then(() =>
         buildImportMap(
           destDir,
@@ -26,13 +26,10 @@ const maybeSnowpack = (tmpDir, destDir, pageMap) =>
     }
   });
 
-const bustRequireCache = srcDir => {
-  const cabef = Object.keys(require.cache).length;
+const bustRequireCache = srcDir =>
   Object.keys(require.cache)
     .filter(x => x.startsWith(path.resolve(srcDir)))
     .forEach(x => delete require.cache[x]);
-  maybeLog('busted', cabef - Object.keys(require.cache).length);
-};
 
 const toSrcPath = (srcDir, p) =>
   path.normalize(p).startsWith(path.normalize(srcDir))
@@ -122,27 +119,30 @@ module.exports.watch = ({
   let importMap;
 
   const handleFile = (srcDir, tmpDir, destDir, pageMap) => p => {
+    const t = Date.now();
     const relToSrc = toSrcPath(srcDir, p);
     if (relToSrc) {
-      maybeLog('  IS SRC', relToSrc);
+      console.log('file changed:', relToSrc);
 
       const page = findPageBySrcPath(pageMap, relToSrc);
       bustRequireCache(srcDir);
       return (page
-        ? maybeLog('  >>> A PAGE') ||
-          handlePageChange(srcDir, tmpDir, destDir, page)
-        : maybeLog('  >>> NOT A PAGE') ||
-          handleComponentChange(
-            srcDir,
-            tmpDir,
-            destDir,
-            pageMap,
-            importMap,
-            relToSrc,
-          )
+        ? handlePageChange(srcDir, tmpDir, destDir, page)
+        : handleComponentChange(
+          srcDir,
+          tmpDir,
+          destDir,
+          pageMap,
+          importMap,
+          relToSrc,
+        )
       )
         .then(() => maybeSnowpack(tmpDir, destDir, pageMap))
-        .then(m => (importMap = m));
+        .then(m => (importMap = m))
+        .then(() =>
+          console.log('partial build done in', Date.now() - t, 'ms\n'),
+        )
+        .catch(logError);
     } else {
       return Promise.resolve();
     }
@@ -166,12 +166,9 @@ module.exports.watch = ({
           atomic: false,
         })
         .on('all', (event, p) => {
-          maybeLog('file event', event, p);
-
           hooks
             .filter(x => x.filter && x.filter(p))
             .forEach(hook => {
-              console.log('PP RUN HOOK');
               queue(hook.task);
             });
           if (p.endsWith('.svelte')) {

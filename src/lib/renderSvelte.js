@@ -1,4 +1,4 @@
-const {injectIntoHead, maybeLog} = require('.');
+const {injectIntoHead} = require('.');
 const relative = require('require-relative');
 const path = require('path');
 const {rollup} = require('rollup');
@@ -8,11 +8,12 @@ const rollupSveltePlugin = require('rollup-plugin-svelte');
 const internal = require('svelte/internal');
 
 require('svelte/register')({
-  dev: true,
+  dev: process.NODE_ENV === 'production',
 });
 
 // require look inside node_modules when path does not start with / or ./
 const requireablePath = p => (!path.isAbsolute(p) ? './' : '') + p;
+
 
 const renderSvelteRequire = (srcDir, filename, props) => {
   const mod = relative.resolve(
@@ -38,23 +39,23 @@ const renderSvelteRollup = (srcDir, filename, props) =>
     bundle.generate({
       format: 'cjs',
     }),
-  ).then(gen =>
+  ).then(gen =>{
     // eslint-disable-next-line no-eval
-    eval(gen.output[0].code).render(props),
+    const r = eval(gen.output[0].code).render(props)
+    return r 
+  }
+
   );
 
 
-const renderSvelte = async (srcDir, filename, props) => {
-  const t = Date.now();
-  const r = await renderSvelteRequire(srcDir, filename, props);
-  console.log(filename, Date.now() - t);
-  return r;
-};
+const RENDERER = renderSvelteRequire;
 
-const renderSvelteWithStyle = (srcDir, filename, props) =>
-  maybeLog('makeHtmlWithStyle', srcDir, filename, props) ||
-  renderSvelte(srcDir, filename, props).then(rendered =>
-    injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(rendered.html),
+
+const renderSvelteWithStyle = async (srcDir, filename, props) => {
+  const rendered = await RENDERER(srcDir, filename, props);
+  return injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(
+    rendered.html,
   );
+}
 
 module.exports.renderSvelteWithStyle = renderSvelteWithStyle;

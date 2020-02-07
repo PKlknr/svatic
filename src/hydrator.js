@@ -1,6 +1,5 @@
+const writeOutputFile = require('./lib/writeOutputFile');
 const {injectIntoBody} = require('./lib');
-const {maybeLog} = require('./lib');
-const fs = require('fs');
 const path = require('path');
 
 const glob = require('glob');
@@ -19,10 +18,11 @@ const destPath = (srcDir, destDir, input) =>
 const svelteCompileAndWriteAll = (srcDir, destDir, inputs) =>
   Promise.all(
     inputs.map(input =>
-      compileSvelteFile(input).then(compiled => {
-        writeOutputFile(destPath(srcDir, destDir, input), compiled);
-        return compiled;
-      }),
+      compileSvelteFile(input).then(compiled =>
+        writeOutputFile(destPath(srcDir, destDir, input), compiled).then(
+          () => compiled,
+        ),
+      ),
     ),
   );
 
@@ -34,12 +34,6 @@ const transformAndRewriteAll = (srcDir, destDir, inputs, code) =>
       ),
     ),
   );
-
-const writeOutputFile = (destPath, content) =>
-  maybeLog('writeOutputFile', destPath) ||
-  fs.promises
-    .mkdir(path.dirname(destPath), {recursive: true})
-    .then(() => fs.promises.writeFile(destPath, content));
 
 module.exports.injectHydratorLoader = (input, props) =>
   injectIntoBody(`
@@ -55,7 +49,6 @@ module.exports.injectHydratorLoader = (input, props) =>
 // we need tmpdir because snowpack would fail to run after transformation
 // (cannot find svelte/internal.js
 module.exports.makeHydrators = (srcDir, tmpDir, destDir, inputs) =>
-  maybeLog('makeHydrators', srcDir, tmpDir, destDir, inputs) ||
   (inputs ? Promise.resolve(inputs) : findSvelteFiles(srcDir)).then(inputs =>
     svelteCompileAndWriteAll(srcDir, tmpDir, inputs).then(compiled =>
       transformAndRewriteAll(tmpDir, destDir, inputs, compiled),

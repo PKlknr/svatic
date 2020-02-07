@@ -30,9 +30,9 @@ progressively enhance in modern ones.
 
 
 ## Usage
-watch and build take the same options. serve takes additional servorOptions.
+`watch` and `build` take the same options. `serve` takes additional `servorOptions`.
 
-watch will only rebuild changed files or files that depend on them.
+watch will only rebuild changed files and files that depend on them.
 It's **fast**!
 
 ### Basic
@@ -57,18 +57,15 @@ const destDir = dev ? './out' : './dist';
 
 const pageMap = [
   {src: 'Index.svelte', dest: 'index.html'},
-  {src: 'Privacy.svelte', dest: 'privacy.html', hydratable: true},
-  {src: 'Contact.svelte', dest: 'imprint.html'},
+  // hydratable tells build to hydrate the page
+  {src: 'Privacy.svelte', dest: 'privacy.html', hydratable: true,},
+  // props are passed to the root component
+  {src: 'Contact.svelte', dest: 'imprint.html' props: {lang: 'en'}},
 ];
 
 // Define some tasks needed for a full website
-const dirs = () => sh('mkdir', ['-p', `${destDir}/fonts`, `${destDir}/img`]);
-const installFonts = () =>
-  sh('cp', ['-ruv', 'node_modules/typeface-inter/Inter (web)', `${destDir}/fonts`]);
-const buildTailwind = () =>
-  sh('npx', ['postcss', '-o', `${destDir}/tw.css`, 'src/css/tailwind.css']);
-const images = () =>
-  sh('cp', ['-ruv', 'src/img/*', `${destDir}/img/`], {shell: true});
+const dirs = () => ...
+...
 
 serve({
   srcDir,  // (./src)  - pageMap[].src is relative to this

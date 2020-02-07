@@ -4,7 +4,7 @@ const svelte = require('svelte/compiler');
 const compileSvelte = (srcPath, source) => {
   const result = svelte.compile(source, {
     filename: srcPath,
-    dev: process.NODE_ENV !== 'production',
+    dev: process.env.NODE_ENV !== 'production',
     hydratable: true,
   });
 

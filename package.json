@@ -25,6 +25,7 @@
     "require-relative": "^0.8.7",
     "servor": "github:PKlknr/servor#for-svatic",
     "snowpack": "^1.1.2",
-    "svelte": "file:../svelte"
+    "svelte": "github:PKlknr/svelte#for-svatic",
+    "terser": "^4.6.3"
   }
 }
