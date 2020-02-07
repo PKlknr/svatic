@@ -22,9 +22,13 @@ const runSnowpack = (tmpDir, destDir) =>
 
 const maybeMinify = destDir =>
   process.env.NODE_ENV === 'production'
-    ? glob
-      .sync(destDir + '/**/!(*+(spec|test)).+(js|mjs|svelte)', {nodir: true})
-      .map(minify)
+    ? Promise.all(
+      glob
+        .sync(destDir + '/**/!(*+(spec|test)).+(js|mjs|svelte)', {
+          nodir: true,
+        })
+        .map(minify),
+    )
     : null;
 
 const build = ({
