@@ -1,20 +1,17 @@
 # svatic
 
-Svelte and snowpack based static website generator with progressive enhancement.
+Fast static website generator with progressive enhancement - based on [Svelte](https://svelte.dev) and [Snowpack](https://www.snowpack.dev/), inspired by [svelvet](https://github.com/jakedeichert/svelvet).
 
-Inspired by [svelvet](https://github.com/jakedeichert/svelvet).
-
-This is currently at POC-level to see if it's feasable. Please raise an issue
-if you have any questions/comments/complaints.
+![image](https://user-images.githubusercontent.com/60601481/74061607-ace4b280-49ec-11ea-8864-cfa14d0d6f94.png)
 
 
 ## But Why?
 Now and then I have to build a mostly static website that does not need a fancy server.
 It seems wrong to serve an empty html shell only to load a script that builds the DOM.
 
-Existing generators are a bit too powerful/opinionated for those jobs.
+Existing generators are a bit too powerful/opinionated for my taste.
 * Sapper is great and I use it a lot. It can export static sites.
-But it's a bit too powerful when I just need to build a simple website.
+But it's too much when I just need to build a simple website and not an app.
 * Snowpack seems like a good idea - ditch the bundler and rely on current browsers
 that support ESM. With svatic I get to show old browsers something and
 progressively enhance in modern ones.
@@ -98,7 +95,6 @@ We include the whole html-document in a Svelte-component, so we don't need to cr
 
 Note: This depends on https://github.com/sveltejs/svelte/pull/4309
 
-
 ### 2. Enhance: Build hydrators and inject a snippet to load them into the generated html
 
 See [example/hydrate](https://github.com/PKlknr/svatic/tree/master/example/hydrate)
@@ -108,8 +104,10 @@ This is heavily inspired by what svelvet does.
 ### 3. Run snowpack to copy dependencies
 
 ### 4. Transform paths
-turns .svelte into .svelte.js. Points at web_modules.
+Turns .svelte into .svelte.js. Points at web_modules.
 
+### 5. Watch
+Build a map of dependencies for each page. On change, rebuild the changed file and all files depending on it.
 
 ## Try it
 ```
