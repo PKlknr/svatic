@@ -20,7 +20,7 @@ const renderSvelte = (srcDir, filename, props) => {
   return Comp.render(props);
 };
 
-const renderSvelteWithStyle = (srcDir, filename, props) => {
+const renderSvelteWithStyle = async (srcDir, filename, props) => {
   maybeLog('makeHtmlWithStyle', srcDir, filename, props);
   const rendered = renderSvelte(srcDir, filename, props);
   return injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(

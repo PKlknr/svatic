@@ -2,7 +2,7 @@ const tap = require('tap');
 const {renderSvelteWithStyle} = require('./renderSvelte');
 
 tap.test('renderSvelteWithStyle()', async ({equal, match}) => {
-  const r = renderSvelteWithStyle('test', 'Test.svelte');
+  const r = await renderSvelteWithStyle('test', 'Test.svelte');
 
   equal(typeof r, 'string', 'result is string');
   match(r, /Hello world/, '.. variable substituted');
@@ -11,7 +11,7 @@ tap.test('renderSvelteWithStyle()', async ({equal, match}) => {
 });
 
 tap.test('renderSvelteWithStyle() with props', async ({match}) => {
-  const r = renderSvelteWithStyle('test', 'Test.svelte', {lang: 'en'});
+  const r = await renderSvelteWithStyle('test', 'Test.svelte', {lang: 'en'});
 
   match(r, /Hello world/, '.. variable substituted');
   match(r, '<html lang="en">', 'prop propagated to html tag');
