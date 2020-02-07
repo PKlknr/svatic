@@ -3,7 +3,7 @@ const relative = require('require-relative');
 const path = require('path');
 
 require('svelte/register')({
-  dev: true,
+  dev: process.NODE_ENV === 'production',
 });
 
 // require look inside node_modules when path does not start with / or ./
