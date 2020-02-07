@@ -1,4 +1,4 @@
-const {injectIntoHead, maybeLog} = require('.');
+const {injectIntoHead} = require('.');
 const relative = require('require-relative');
 const path = require('path');
 
@@ -21,7 +21,6 @@ const renderSvelte = (srcDir, filename, props) => {
 };
 
 const renderSvelteWithStyle = async (srcDir, filename, props) => {
-  maybeLog('makeHtmlWithStyle', srcDir, filename, props);
   const rendered = renderSvelte(srcDir, filename, props);
   return injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(
     rendered.html,

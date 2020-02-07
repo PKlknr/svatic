@@ -5,6 +5,7 @@ const snowpack = require('./lib/snowpack');
 const {makeHydrators} = require('./hydrator');
 const glob = require('glob');
 const minify = require('./lib/minify');
+const fs = require('fs');
 
 const renderHtmlPagesInMap = (srcDir, destDir, pageMap) =>
   Promise.all(
@@ -31,6 +32,8 @@ const maybeMinify = destDir =>
     )
     : null;
 
+const logError = require('./lib/logError');
+
 const build = ({
   srcDir = './src',
   tmpDir = './tmp',
@@ -38,20 +41,20 @@ const build = ({
   pageMap,
   hooks = [],
   afterBuild = () => {},
-} = {}) =>
-  runAllHooks(hooks)
+} = {}) => {
+  const t = Date.now();
+  return fs.promises
+    .mkdir(destDir, {recursive: true})
+    .then(() => fs.promises.mkdir(tmpDir, {recursive: true}))
+    .then(() => runAllHooks(hooks))
     .then(() => renderHtmlPagesInMap(srcDir, destDir, pageMap))
     .then(() => makeHydrators(srcDir, tmpDir, destDir))
     .then(() => runSnowpack(tmpDir, destDir))
     .then(() => maybeMinify(destDir))
     .then(afterBuild)
-    .catch(e => {
-      console.log(e);
-      if (e.frame) {
-        console.log(e.frame);
-      }
-      console.log('\n\nBuild failed\n\n');
-    });
+    .then(() => console.log('full build done in', Date.now() - t, 'ms\n'))
+    .catch(e => console.log(e) || logError(new Error(e)));
+};
 
 module.exports = {
   runSnowpack,
