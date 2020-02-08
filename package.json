@@ -25,7 +25,7 @@
     "require-relative": "^0.8.7",
     "servor": "github:PKlknr/servor#for-svatic",
     "snowpack": "^1.1.2",
-    "svelte": "file:../svelte",
+    "svelte": "github:wix-incubator/wix-svelte#master",
     "terser": "^4.6.3"
   }
 }
