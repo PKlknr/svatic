@@ -2,7 +2,7 @@
 
 Fast static website generator with progressive enhancement - based on [Svelte](https://svelte.dev) and [Snowpack](https://www.snowpack.dev/), inspired by [svelvet](https://github.com/jakedeichert/svelvet).
 
-![image](https://user-images.githubusercontent.com/60601481/74061607-ace4b280-49ec-11ea-8864-cfa14d0d6f94.png)
+![image](https://user-images.githubusercontent.com/60601481/74074458-70c24980-4a0e-11ea-8e50-73d86a77146f.png)
 
 
 ## But Why?
