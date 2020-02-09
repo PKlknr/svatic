@@ -113,18 +113,9 @@ turns .svelte into .svelte.js. Points at web_modules.
 
 ## Try it
 ```
-# until https://github.com/sveltejs/svelte/pull/4309 and
-# https://github.com/sveltejs/svelte/pull/4365 are merged:
-git clone https://github.com/PKlknr/svelte
-cd svelte
-git checkout for-svatic
-npm i && npm run build
-cd ..
-
 git clone https://github.com/PKlknr/svatic
 cd svatic
 npm i
-npm i ../svelte
 
 node example/pureHtml/build.js
 node example/hydrate/build.js
