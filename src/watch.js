@@ -86,7 +86,7 @@ const makeQueue = onFinish => {
     busy = true;
     const f = q[0];
     q = q.slice(1);
-    f()
+    Promise.resolve(f())
       .catch(e => {
         console.error('E', e);
       })
