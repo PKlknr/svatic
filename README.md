@@ -79,7 +79,8 @@ serve({
     {filter: filename => filename.includes('src/img'), task: images},
   ],
 
-  afterBuild, // (noop) - function that is called after each build
+  afterBuild, // (noop) - function that is called after each build. First
+              // param is error if apllicable
 
   // servorOptions are passed to servor
   servorOptions: {port: 3000},

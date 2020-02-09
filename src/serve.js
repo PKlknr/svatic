@@ -36,8 +36,8 @@ module.exports.serve = ({
         pageMap,
         hooks,
 
-        afterBuild: () => {
-          afterBuild();
+        afterBuild: (...args) => {
+          afterBuild(...args);
           reload();
         },
       }),

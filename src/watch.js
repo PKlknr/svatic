@@ -89,6 +89,7 @@ const makeQueue = onFinish => {
     Promise.resolve(f())
       .catch(e => {
         console.error('E', e);
+        onFinish(e);
       })
       .then(() => {
         if (q.length) {
@@ -142,7 +143,10 @@ module.exports.watch = ({
         .then(() =>
           console.log('partial build done in', Date.now() - t, 'ms\n'),
         )
-        .catch(logError);
+        .catch(e => {
+          logError(e);
+          afterBuild(e);
+        });
     } else {
       return Promise.resolve();
     }
