@@ -153,6 +153,17 @@ module.exports.watch = ({
   };
   const queue = makeQueue(afterBuild);
 
+  const onFileEvent = ( p) => {
+    hooks
+      .filter(x => x.filter && x.filter(p))
+      .forEach(hook => {
+        queue(() => hook.task(p));
+      });
+    if (p.endsWith('.svelte')) {
+      queue(() => handleFile(srcDir, tmpDir, destDir, pageMap)(p));
+    }
+  };
+
   build({srcDir, tmpDir, destDir, pageMap, hooks, afterBuild})
     .then(() =>
       buildImportMap(
@@ -169,15 +180,7 @@ module.exports.watch = ({
           ignoreInitial: true,
           atomic: false,
         })
-        .on('all', (event, p) => {
-          hooks
-            .filter(x => x.filter && x.filter(p))
-            .forEach(hook => {
-              queue(hook.task);
-            });
-          if (p.endsWith('.svelte')) {
-            queue(() => handleFile(srcDir, tmpDir, destDir, pageMap)(p));
-          }
-        });
+        .on('change', onFileEvent)
+        .on('create', onFileEvent);
     });
 };
