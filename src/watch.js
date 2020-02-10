@@ -5,20 +5,21 @@ const {buildImportMap} = require('./lib/lex');
 const {build, runSnowpack} = require('./build');
 const {makeHydrators} = require('./hydrator');
 const {renderPage} = require('./render');
+const {evalPageMap} = require('./lib/pageMap');
 
 const logError = require('./lib/logError');
 
 const maybeSnowpack = (tmpDir, destDir, pageMap) =>
   buildImportMap(
     destDir,
-    pageMap.map(({src}) => src),
+    pageMap.filter(({hydratable}) => hydratable).map(({src}) => src),
   ).catch(e => {
     if (e.code === 'ENOENT') {
       console.log('new dependency - running snowpack');
       return runSnowpack(tmpDir, destDir).then(() =>
         buildImportMap(
           destDir,
-          pageMap.map(({src}) => src),
+          pageMap.filter(({hydratable}) => hydratable).map(({src}) => src),
         ),
       );
     } else {
@@ -160,15 +161,16 @@ module.exports.watch = ({
         queue(() => hook.task(p));
       });
     if (p.endsWith('.svelte')) {
-      queue(() => handleFile(srcDir, tmpDir, destDir, pageMap)(p));
+      queue(() => handleFile(srcDir, tmpDir, destDir, evalPageMap(pageMap))(p));
     }
   };
 
   build({srcDir, tmpDir, destDir, pageMap, hooks, afterBuild})
-    .then(() =>
+    .then(() => evalPageMap(pageMap))
+    .then(pageMap =>
       buildImportMap(
         destDir,
-        pageMap.map(({src}) => src),
+        pageMap.filter(({hydratable}) => hydratable).map(({src}) => src),
       ),
     )
 
@@ -181,6 +183,6 @@ module.exports.watch = ({
           atomic: false,
         })
         .on('change', onFileEvent)
-        .on('create', onFileEvent);
+        .on('add', onFileEvent);
     });
 };
