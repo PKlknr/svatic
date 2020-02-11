@@ -1,5 +1,5 @@
 const tap = require('tap');
-const {build, destDir} = require('./build.js');
+const {build, destDir} = require('./build.hydrate.js');
 const fs = require('fs');
 const glob = require('glob');
 const path = require('path');
@@ -13,11 +13,16 @@ const cleanOut = () =>
   });
 
 const expectedOutFiles = [
+  '/about.html',
+  '/About.svelte.js',
+  '/Foot.svelte.js',
   '/index.html',
   '/Index.svelte.js',
+  '/Page.svelte.js',
   '/web_modules/import-map.json',
   '/web_modules/svelte/internal.js',
-].map(x => path.join(__dirname, 'out', x));
+].map(x => path.join(destDir, x));
+
 
 tap.test('hydrator example works', ({deepEqual, match}) =>
   cleanOut()
@@ -32,7 +37,7 @@ tap.test('hydrator example works', ({deepEqual, match}) =>
 
     .then(() =>
       fs.promises
-        .readFile(path.join(__dirname, '/out/index.html'), 'utf-8')
+        .readFile(path.join(destDir, '/index.html'), 'utf-8')
         .then(r => {
           match(
             r,
@@ -46,7 +51,7 @@ tap.test('hydrator example works', ({deepEqual, match}) =>
 
     .then(() =>
       fs.promises
-        .readFile(path.join(__dirname, '/out/Index.svelte.js'), 'utf-8')
+        .readFile(path.join(destDir, '/Index.svelte.js'), 'utf-8')
         .then(r => {
           match(r, 'dispatch_dev', 'Index.svelte.js: in dev-mode');
           match(
@@ -71,7 +76,7 @@ tap.test('hydrator:production', ({deepEqual, match, notMatch}) =>
         findOutputFiles(),
         [
           ...expectedOutFiles,
-          '/home/pk/git/svatic/example/hydrate/out/web_modules/svelte/internal.js.map',
+          '/home/pk/git/svatic/example/out/hydrate/web_modules/svelte/internal.js.map',
         ],
         'expected output files found',
       );
@@ -79,7 +84,7 @@ tap.test('hydrator:production', ({deepEqual, match, notMatch}) =>
 
     .then(() =>
       fs.promises
-        .readFile(path.join(__dirname, '/out/Index.svelte.js'), 'utf-8')
+        .readFile(path.join(destDir, '/Index.svelte.js'), 'utf-8')
         .then(r => {
           match(
             r,

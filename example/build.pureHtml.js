@@ -1,4 +1,4 @@
-const {build} = require('../..');
+const {build} = require('..');
 
 const path = require('path');
 const fs = require('fs');
@@ -10,23 +10,18 @@ const pageMap = [
 
 const srcDir = path.join(__dirname, 'src');
 const tmpDir = path.join(__dirname, 'tmp');
-const destDir = path.join(__dirname, 'out');
+const destDir = path.join(__dirname, 'out/pureHtml');
 
 const main = () =>
-  fs.promises
-    .mkdir(destDir, {recursive: true})
-
-    .then(() =>
-      build({
-        srcDir,
-        tmpDir,
-        destDir,
-        pageMap,
-      }),
-    );
+  build({
+    srcDir,
+    tmpDir,
+    destDir,
+    pageMap,
+  });
 
 if (require.main === module) {
   main();
 } else {
-  module.exports = {build: main, pageMap, srcDir, destDir};
+  module.exports = {build: main, pageMap, srcDir, tmpDir, destDir};
 }
