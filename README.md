@@ -29,14 +29,14 @@ progressively enhance in modern ones.
 ## Usage
 
 ### cli
-A very simple cli renders `.svelte` files in `src` to hydratable `.html` and copy
+A very simple cli renders `.svelte` files in `src` to hydratable `.html` and copies
 other files.
 ```
 npm i --save-dev PKlknr/svatic
 npx svatic
 ```
 
-Now, when you create `src/Index.svelte` it will create `dest/index.html` and 
+Now, when you create e.g. `src/Index.svelte`, it will create `dest/index.html` and 
 serve it wit live-reloading.
 
 
