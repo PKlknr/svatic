@@ -1,7 +1,6 @@
 const {build} = require('..');
 
 const path = require('path');
-const fs = require('fs');
 
 const pageMap = [
   {src: 'Index.svelte', dest: 'index.html'},

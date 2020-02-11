@@ -1,7 +1,6 @@
 const {watch} = require('./watch');
 const servor = require('servor');
 const fs = require('fs');
-const path = require('path');
 
 const devServor = async opts => {
   const inst = await servor(opts);

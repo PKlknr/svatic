@@ -78,7 +78,6 @@ const handleComponentChange = (
     makeHydrators(srcDir, tmpDir, destDir, [path.join(srcDir, relToSrc)]),
   );
 
-
 module.exports.watch = ({
   srcDir = './src',
   tmpDir = './tmp',
@@ -110,9 +109,7 @@ module.exports.watch = ({
       )
         .then(() => maybeSnowpack(tmpDir, destDir, pageMap))
         .then(m => (importMap = m))
-        .then(() =>
-          maybeLog('partial build done in', Date.now() - t, 'ms\n'),
-        )
+        .then(() => maybeLog('partial build done in', Date.now() - t, 'ms\n'))
         .catch(e => {
           logError(e);
           afterBuild(e);
@@ -123,7 +120,7 @@ module.exports.watch = ({
   };
   const queue = makeQueue(afterBuild);
 
-  const onFileEvent = ( p) => {
+  const onFileEvent = p => {
     hooks
       .filter(x => x.filter && x.filter(p))
       .forEach(hook => {

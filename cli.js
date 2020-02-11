@@ -9,12 +9,13 @@ const srcDir = './src';
 const tmpDir = './tmp';
 const destDir = './dest';
 
-const findPages = () => glob
-  .sync(path.normalize(srcDir) + '/*.svelte', {
-    nodir: true,
-  })
-  .map(x => path.basename(x))
-  .map(path.normalize);
+const findPages = () =>
+  glob
+    .sync(path.normalize(srcDir) + '/*.svelte', {
+      nodir: true,
+    })
+    .map(x => path.basename(x))
+    .map(path.normalize);
 
 const findAssets = () =>
   glob

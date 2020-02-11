@@ -1,7 +1,7 @@
 <style>
-  footer { color: red; }
+  footer {
+    color: red;
+  }
 </style>
 
-<footer>
-  Thank you
-</footer>
+<footer>Thank you</footer>

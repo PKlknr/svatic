@@ -1,11 +1,6 @@
 const tap = require('tap');
 const {buildImportMap} = require('./lex');
-const {
-  build,
-  pageMap,
-  destDir,
-} = require('../../example/build.pureHtml');
-
+const {build, pageMap, destDir} = require('../../example/build.pureHtml');
 
 tap.test('buildImportMap()', async ({deepEqual}) => {
   await build();

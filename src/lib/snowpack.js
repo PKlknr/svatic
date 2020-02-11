@@ -30,6 +30,7 @@ module.exports = ({
         maybeLog(stdout);
       }
       if (stderr) {
+        /* eslint-disable-next-line no-console */
         console.log(stderr);
       }
     });

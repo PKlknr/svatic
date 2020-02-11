@@ -8,6 +8,7 @@ const findOutputFiles = () => glob.sync(destDir + '/**/*', {nodir: true});
 
 const cleanOut = () =>
   Promise.all(findOutputFiles().map(fs.promises.unlink)).catch(err => {
+    /* eslint-disable-next-line no-console */
     console.log('Cannot remove outfile', err);
     throw err;
   });

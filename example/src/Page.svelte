@@ -3,12 +3,13 @@
 </script>
 
 <style>
-  .min-h-80vh { min-height: 80vh}
+  .min-h-80vh {
+    min-height: 80vh;
+  }
 </style>
 
-<html lang=en>
-  <head>
-  </head>
+<html lang="en">
+  <head></head>
 
   <body>
     <slot />
