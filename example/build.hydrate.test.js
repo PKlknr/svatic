@@ -21,8 +21,8 @@ const expectedOutFiles = [
   '/Page.svelte.js',
   '/web_modules/import-map.json',
   '/web_modules/svelte/internal.js',
+  '/web_modules/svelte/transition.js',
 ].map(x => path.join(destDir, x));
-
 
 tap.test('hydrator example works', ({deepEqual, match}) =>
   cleanOut()
@@ -73,11 +73,16 @@ tap.test('hydrator:production', ({deepEqual, match, notMatch}) =>
     })
     .then(() => {
       deepEqual(
-        findOutputFiles(),
+        findOutputFiles().sort(),
         [
           ...expectedOutFiles,
-          '/home/pk/git/svatic/example/out/hydrate/web_modules/svelte/internal.js.map',
-        ],
+          ...[
+            '/web_modules/common/index-28f0b341.js',
+            '/web_modules/common/index-28f0b341.js.map',
+            '/web_modules/svelte/internal.js.map',
+            '/web_modules/svelte/transition.js.map',
+          ].map(x => path.join(destDir, x)),
+        ].sort(),
         'expected output files found',
       );
     })
