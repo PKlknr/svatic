@@ -27,12 +27,26 @@ progressively enhance in modern ones.
 
 
 ## Usage
+
+### cli
+A very simple cli renders `.svelte` files in `src` to hydratable `.html` and copies
+other files.
+```
+npm i --save-dev PKlknr/svatic
+npx svatic
+```
+
+Now, when you create e.g. `src/Index.svelte`, it will create `dest/index.html` and 
+serve it wit live-reloading.
+
+
+### lib
 `watch` and `build` take the same options. `serve` takes additional `servorOptions`.
 
 watch will only rebuild changed files and files that depend on them.
 It's **fast**!
 
-### Basic
+#### Basic
 ```js
 const {watch, build, serve} = require('svatic');
 
@@ -45,7 +59,7 @@ serve({
 }).then(() => console.log('done'))
 ```
 
-### All options
+#### All options
 ```js
 const dev = process.env.NODE_ENV !== 'production';
 const srcDir = './src';
@@ -79,7 +93,8 @@ serve({
     {filter: filename => filename.includes('src/img'), task: images},
   ],
 
-  afterBuild, // (noop) - function that is called after each build
+  afterBuild, // (noop) - function that is called after each build. First
+              // param is error if apllicable
 
   // servorOptions are passed to servor
   servorOptions: {port: 3000},

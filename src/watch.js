@@ -5,6 +5,7 @@ const {buildImportMap} = require('./lib/lex');
 const {build, runSnowpack} = require('./build');
 const {makeHydrators} = require('./hydrator');
 const {renderPage} = require('./render');
+const {evalPageMap} = require('./lib/pageMap');
 
 const logError = require('./lib/logError');
 
@@ -86,9 +87,10 @@ const makeQueue = onFinish => {
     busy = true;
     const f = q[0];
     q = q.slice(1);
-    f()
+    Promise.resolve(f())
       .catch(e => {
         console.error('E', e);
+        onFinish(e);
       })
       .then(() => {
         if (q.length) {
@@ -142,15 +144,30 @@ module.exports.watch = ({
         .then(() =>
           console.log('partial build done in', Date.now() - t, 'ms\n'),
         )
-        .catch(logError);
+        .catch(e => {
+          logError(e);
+          afterBuild(e);
+        });
     } else {
       return Promise.resolve();
     }
   };
   const queue = makeQueue(afterBuild);
 
+  const onFileEvent = ( p) => {
+    hooks
+      .filter(x => x.filter && x.filter(p))
+      .forEach(hook => {
+        queue(() => hook.task(p));
+      });
+    if (p.endsWith('.svelte')) {
+      queue(() => handleFile(srcDir, tmpDir, destDir, evalPageMap(pageMap))(p));
+    }
+  };
+
   build({srcDir, tmpDir, destDir, pageMap, hooks, afterBuild})
-    .then(() =>
+    .then(() => evalPageMap(pageMap))
+    .then(pageMap =>
       buildImportMap(
         destDir,
         pageMap.map(({src}) => src),
@@ -165,15 +182,7 @@ module.exports.watch = ({
           ignoreInitial: true,
           atomic: false,
         })
-        .on('all', (event, p) => {
-          hooks
-            .filter(x => x.filter && x.filter(p))
-            .forEach(hook => {
-              queue(hook.task);
-            });
-          if (p.endsWith('.svelte')) {
-            queue(() => handleFile(srcDir, tmpDir, destDir, pageMap)(p));
-          }
-        });
+        .on('change', onFileEvent)
+        .on('add', onFileEvent);
     });
 };

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Serverless SSR with svelte and snowpack",
   "main": "index.js",
+  "bin": "cli.js",
   "scripts": {
     "test:watch": "nodemon -e svelte,js -x npx tap -- -Rspec --no-esm --no-cov src/**/*.test.js example/**/*.test.js",
     "test": "tap -Rspec --no-esm src/**/*.test.js example/**/*.test.js"
