@@ -1,6 +1,7 @@
 const fs = require('fs');
 const terser = require('terser');
 const writeOutputFile = require('./writeOutputFile');
+const maybeLog = require('./maybeLog');
 
 module.exports = filename =>
   fs.promises
@@ -11,4 +12,4 @@ module.exports = filename =>
       }),
     )
     .then(result => writeOutputFile(filename, result.code))
-    .then(() => console.info(`Terser minified ${filename}`));
+    .then(() => maybeLog(`Terser minified ${filename}`));

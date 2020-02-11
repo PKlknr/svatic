@@ -7,6 +7,7 @@ const {makeHydrators} = require('./hydrator');
 const {renderPage} = require('./render');
 const {evalPageMap} = require('./lib/pageMap');
 const makeQueue = require('./lib/queue');
+const maybeLog = require('./lib/maybeLog');
 
 const logError = require('./lib/logError');
 
@@ -16,7 +17,7 @@ const maybeSnowpack = (tmpDir, destDir, pageMap) =>
     pageMap.map(({src}) => src),
   ).catch(e => {
     if (e.code === 'ENOENT') {
-      console.log('new dependency - running snowpack');
+      maybeLog('new dependency - running snowpack');
       return runSnowpack(tmpDir, destDir).then(() =>
         buildImportMap(
           destDir,
@@ -92,7 +93,7 @@ module.exports.watch = ({
     const t = Date.now();
     const relToSrc = toSrcPath(srcDir, p);
     if (relToSrc) {
-      console.log('file changed:', relToSrc);
+      maybeLog('file changed:', relToSrc);
 
       const page = findPageBySrcPath(pageMap, relToSrc);
       bustRequireCache(srcDir);
@@ -110,7 +111,7 @@ module.exports.watch = ({
         .then(() => maybeSnowpack(tmpDir, destDir, pageMap))
         .then(m => (importMap = m))
         .then(() =>
-          console.log('partial build done in', Date.now() - t, 'ms\n'),
+          maybeLog('partial build done in', Date.now() - t, 'ms\n'),
         )
         .catch(e => {
           logError(e);

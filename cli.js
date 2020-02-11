@@ -3,6 +3,7 @@
 const {serve} = require('./src/serve');
 const glob = require('glob');
 const path = require('path');
+const maybeLog = require('./src/lib/maybeLog');
 
 const srcDir = './src';
 const tmpDir = './tmp';
@@ -35,7 +36,7 @@ const fs = require('fs');
 
 const copyFile = filename => {
   const destPath = filename.replace(new RegExp('^src/'), 'dist/');
-  console.log('copying asset', filename, destPath, path.dirname(destPath));
+  maybeLog('copying asset', filename, destPath, path.dirname(destPath));
   return fs.promises
     .mkdir(path.dirname(destPath), {recursive: true})
     .then(() => fs.promises.copyFile(filename, destPath));
