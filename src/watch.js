@@ -6,6 +6,7 @@ const {build, runSnowpack} = require('./build');
 const {makeHydrators} = require('./hydrator');
 const {renderPage} = require('./render');
 const {evalPageMap} = require('./lib/pageMap');
+const makeQueue = require('./lib/queue');
 
 const logError = require('./lib/logError');
 
@@ -76,39 +77,6 @@ const handleComponentChange = (
     makeHydrators(srcDir, tmpDir, destDir, [path.join(srcDir, relToSrc)]),
   );
 
-const makeQueue = onFinish => {
-  let q = [];
-  let busy = false;
-
-  const run = () => {
-    if (!q.length) {
-      return;
-    }
-    busy = true;
-    const f = q[0];
-    q = q.slice(1);
-    Promise.resolve(f())
-      .catch(e => {
-        console.error('E', e);
-        onFinish(e);
-      })
-      .then(() => {
-        if (q.length) {
-          run();
-        } else {
-          busy = false;
-          onFinish();
-        }
-      });
-  };
-
-  return filename => {
-    q = [...q, filename];
-    if (!busy) {
-      run();
-    }
-  };
-};
 
 module.exports.watch = ({
   srcDir = './src',
