@@ -12,14 +12,14 @@ const logError = require('./lib/logError');
 const maybeSnowpack = (tmpDir, destDir, pageMap) =>
   buildImportMap(
     destDir,
-    pageMap.filter(({hydratable}) => hydratable).map(({src}) => src),
+    pageMap.map(({src}) => src),
   ).catch(e => {
     if (e.code === 'ENOENT') {
       console.log('new dependency - running snowpack');
       return runSnowpack(tmpDir, destDir).then(() =>
         buildImportMap(
           destDir,
-          pageMap.filter(({hydratable}) => hydratable).map(({src}) => src),
+          pageMap.map(({src}) => src),
         ),
       );
     } else {
@@ -170,7 +170,7 @@ module.exports.watch = ({
     .then(pageMap =>
       buildImportMap(
         destDir,
-        pageMap.filter(({hydratable}) => hydratable).map(({src}) => src),
+        pageMap.map(({src}) => src),
       ),
     )
 
