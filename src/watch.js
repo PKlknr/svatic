@@ -1,6 +1,6 @@
 const path = require('path');
 const chokidar = require('chokidar');
-const {buildImportMap} = require('./lib/lex');
+const {findPageDeps} = require('./lib/lex');
 
 const {build} = require('./build');
 const {evalPageMap} = require('./lib/pageMap');
@@ -25,7 +25,7 @@ module.exports.watch = ({
   hooks = [],
   afterBuild = () => {},
 } = {}) => {
-  let importMap;
+  let pageDeps;
 
   const queue = makeQueue(afterBuild);
   const buildPartial = makeBuildPartial(srcDir, tmpDir, destDir);
@@ -37,10 +37,10 @@ module.exports.watch = ({
         const t = Date.now();
         buildPartial(
           evalPageMap(pageMap),
-          importMap,
+          pageDeps,
           path.normalize(changedFile),
         )
-          .then(m => (importMap = m)) // SFX
+          .then(m => (pageDeps = m)) // SFX
           .then(() => maybeLog('partial build done in', Date.now() - t, 'ms\n'))
           .catch(e => {
             // SFX
@@ -54,14 +54,14 @@ module.exports.watch = ({
   build({srcDir, tmpDir, destDir, pageMap, hooks, afterBuild})
     .then(() => evalPageMap(pageMap))
     .then(pageMap =>
-      buildImportMap(
+      findPageDeps(
         destDir,
         pageMap.map(({src}) => src),
       ),
     )
 
     .then(m => {
-      importMap = m;
+      pageDeps = m;
 
       chokidar
         .watch([srcDir], {
