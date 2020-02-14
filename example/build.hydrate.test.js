@@ -78,8 +78,8 @@ tap.test('hydrator:production', ({deepEqual, match, notMatch}) =>
         [
           ...expectedOutFiles,
           ...[
-            '/web_modules/common/index-28f0b341.js',
-            '/web_modules/common/index-28f0b341.js.map',
+            '/web_modules/common/index-43a54b45.js',
+            '/web_modules/common/index-43a54b45.js.map',
             '/web_modules/svelte/internal.js.map',
             '/web_modules/svelte/transition.js.map',
           ].map(x => path.join(destDir, x)),
