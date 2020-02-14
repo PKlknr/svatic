@@ -6,7 +6,6 @@ module.exports = (destPath, content) =>
   maybeLog(
     'writeOutputFile',
     destPath,
-    path.dirname(destPath),
     content.length,
     'bytes',
   ) ||
