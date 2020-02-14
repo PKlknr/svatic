@@ -9,10 +9,10 @@
   }
 </style>
 
-<html lang="{lang}">
+<html {lang}>
   <head></head>
   <body>
     <p class="bold">Hello {x}</p>
   </body>
-<img src="/"/>
+  <img src="/" />
 </html>

@@ -6,7 +6,17 @@
   "bin": "cli.js",
   "scripts": {
     "test:watch": "nodemon -e svelte,js -x npx tap -- -Rspec --no-esm --no-cov src/**/*.test.js example/**/*.test.js",
-    "test": "tap -Rspec --no-esm src/**/*.test.js example/**/*.test.js"
+    "test": "tap -Rspec --no-esm src/**/*.test.js example/**/*.test.js",
+    "format": "prettier --write '**/*.{js,svelte,css}' && eslint --fix '**/*.js'"
+  },
+  "lint-staged": {
+    "src/**/*.{js,svelte,css}": "prettier --write",
+    "src/**/*.{js,svelte}": "eslint --fix"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "author": "Patrick Klöckner",
   "license": "MIT",
@@ -16,6 +26,8 @@
     "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-svelte3": "^2.7.3",
+    "husky": "^4.2.0",
+    "lint-staged": "^10.0.2",
     "prettier": "^1.19.1",
     "prettier-plugin-svelte": "^0.7.0",
     "tap": "^14.10.6"

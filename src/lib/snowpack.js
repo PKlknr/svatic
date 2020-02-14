@@ -6,6 +6,7 @@ const childProcess = require('child_process');
 const exec = util.promisify(childProcess.exec);
 const path = require('path');
 const glob = require('glob');
+const maybeLog = require('./maybeLog');
 
 const snowpackLocation = path.resolve(
   require.resolve('snowpack'),
@@ -26,9 +27,10 @@ module.exports = ({
       }`,
     ).then(({stdout, stderr}) => {
       if (stdout) {
-        console.log(stdout);
+        maybeLog(stdout);
       }
       if (stderr) {
+        /* eslint-disable-next-line no-console */
         console.log(stderr);
       }
     });

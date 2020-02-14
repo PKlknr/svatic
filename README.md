@@ -102,17 +102,15 @@ serve({
 ```
 
 ## How it works
-### 1. Static: Generate static HTML from Svelte-components and inject style.
+See [example/src](https://github.com/PKlknr/svatic/tree/master/example/src)
 
-See [example/pureHtml](https://github.com/PKlknr/svatic/tree/master/example/pureHtml)
+### 1. Static: Generate static HTML from Svelte-components and inject style.
 
 We include the whole html-document in a Svelte-component, so we don't need to crawl a site.
 
 Note: This depends on https://github.com/sveltejs/svelte/pull/4309
 
 ### 2. Enhance: Build hydrators and inject a snippet to load them into the generated html
-
-See [example/hydrate](https://github.com/PKlknr/svatic/tree/master/example/hydrate)
 
 This is heavily inspired by what svelvet does.
 
@@ -130,7 +128,7 @@ git clone https://github.com/PKlknr/svatic
 cd svatic
 npm i
 
-node example/pureHtml/build.js
-node example/hydrate/build.js
+node example/build.pureHtml.js
+node example/build.hydrate.js
 ```
 ... and have a look at example/*/out

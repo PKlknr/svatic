@@ -1,11 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const maybeLog = require('./maybeLog');
 
 module.exports = (destPath, content) =>
-  console.log(
+  maybeLog(
     'writeOutputFile',
     destPath,
-    path.dirname(destPath),
     content.length,
     'bytes',
   ) ||

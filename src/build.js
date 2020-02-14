@@ -1,6 +1,7 @@
 const path = require('path');
 const {runAllHooks} = require('./lib/hooks');
 const {renderPage} = require('./render');
+const maybeLog = require('./lib/maybeLog');
 const snowpack = require('./lib/snowpack');
 const {makeHydrators} = require('./hydrator');
 const {evalPageMap} = require('./lib/pageMap');
@@ -47,19 +48,19 @@ const build = ({
   return Promise.all([
     fs.promises.mkdir(srcDir, {recursive: true}),
     fs.promises.mkdir(tmpDir, {recursive: true}),
-    fs.promises.mkdir(destDir, {recursive: true})
+    fs.promises.mkdir(destDir, {recursive: true}),
   ])
     .then(() => fs.promises.mkdir(tmpDir, {recursive: true}))
     .then(() => runAllHooks(hooks))
     .then(() => evalPageMap(pageMap))
-  
+
     .then(pageMap => renderHtmlPagesInMap(srcDir, destDir, pageMap))
     .then(() => makeHydrators(srcDir, tmpDir, destDir))
     .then(() => runSnowpack(tmpDir, destDir))
     .then(() => maybeMinify(destDir))
     .then(afterBuild)
-    .then(() => console.log('full build done in', Date.now() - t, 'ms\n'))
-    .catch(e => console.log(e) || logError(new Error(e)));
+    .then(() => maybeLog('full build done in', Date.now() - t, 'ms\n'))
+    .catch(e => logError(new Error(e)));
 };
 
 module.exports = {

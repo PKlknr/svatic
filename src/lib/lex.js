@@ -34,9 +34,7 @@ const rec = (destDir, fn) => {
 
 const lex = (destDir, filename) => init.then(() => rec(destDir, filename));
 
-const buildImportMap = (dir, entries) =>
-  Promise.all(
-    entries.map(src => lex(dir, src + '.js').then(r => [src, r])),
-  );
+const findPageDeps = (dir, entries) =>
+  Promise.all(entries.map(src => lex(dir, src + '.js').then(r => [src, r])));
 
-module.exports = {buildImportMap};
+module.exports = {findPageDeps};

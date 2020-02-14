@@ -3,17 +3,19 @@
 const {serve} = require('./src/serve');
 const glob = require('glob');
 const path = require('path');
+const maybeLog = require('./src/lib/maybeLog');
 
 const srcDir = './src';
 const tmpDir = './tmp';
 const destDir = './dest';
 
-const findPages = () => glob
-  .sync(path.normalize(srcDir) + '/*.svelte', {
-    nodir: true,
-  })
-  .map(x => path.basename(x))
-  .map(path.normalize);
+const findPages = () =>
+  glob
+    .sync(path.normalize(srcDir) + '/*.svelte', {
+      nodir: true,
+    })
+    .map(x => path.basename(x))
+    .map(path.normalize);
 
 const findAssets = () =>
   glob
@@ -34,8 +36,8 @@ const pageMap = () => {
 const fs = require('fs');
 
 const copyFile = filename => {
-  const destPath = filename.replace(new RegExp('^src/'), 'dist/');
-  console.log('copying asset', filename, destPath, path.dirname(destPath));
+  const destPath = filename.replace(new RegExp('^' + path.normalize(srcDir)), destDir);
+  maybeLog('copying asset', filename, destPath, path.dirname(destPath));
   return fs.promises
     .mkdir(path.dirname(destPath), {recursive: true})
     .then(() => fs.promises.copyFile(filename, destPath));
