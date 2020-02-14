@@ -9,9 +9,8 @@ const compileSvelte = (srcPath, source) => {
   });
 
   result.warnings.forEach(warning => {
-    console.warn(
-      `\nWarning: ${warning.filename}\n${warning.message}`,
-    );
+    /* eslint-disable no-console */
+    console.warn(`\nWarning: ${warning.filename}\n${warning.message}`);
     console.warn(warning.frame);
   });
 

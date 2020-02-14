@@ -1,20 +1,17 @@
 # svatic
 
-Svelte and snowpack based static website generator with progressive enhancement.
+Fast static website generator with progressive enhancement - based on [Svelte](https://svelte.dev) and [Snowpack](https://www.snowpack.dev/), inspired by [svelvet](https://github.com/jakedeichert/svelvet).
 
-Inspired by [svelvet](https://github.com/jakedeichert/svelvet).
-
-This is currently at POC-level to see if it's feasable. Please raise an issue
-if you have any questions/comments/complaints.
+![image](https://user-images.githubusercontent.com/60601481/74074458-70c24980-4a0e-11ea-8e50-73d86a77146f.png)
 
 
 ## But Why?
 Now and then I have to build a mostly static website that does not need a fancy server.
 It seems wrong to serve an empty html shell only to load a script that builds the DOM.
 
-Existing generators are a bit too powerful/opinionated for those jobs.
+Existing generators are a bit too powerful/opinionated for my taste.
 * Sapper is great and I use it a lot. It can export static sites.
-But it's a bit too powerful when I just need to build a simple website.
+But it's too much when I just need to build a simple website and not an app.
 * Snowpack seems like a good idea - ditch the bundler and rely on current browsers
 that support ESM. With svatic I get to show old browsers something and
 progressively enhance in modern ones.
@@ -30,12 +27,26 @@ progressively enhance in modern ones.
 
 
 ## Usage
+
+### cli
+A very simple cli renders `.svelte` files in `src` to hydratable `.html` and copies
+other files.
+```
+npm i --save-dev PKlknr/svatic
+npx svatic
+```
+
+Now, when you create e.g. `src/Index.svelte`, it will create `dest/index.html` and 
+serve it wit live-reloading.
+
+
+### lib
 `watch` and `build` take the same options. `serve` takes additional `servorOptions`.
 
 watch will only rebuild changed files and files that depend on them.
 It's **fast**!
 
-### Basic
+#### Basic
 ```js
 const {watch, build, serve} = require('svatic');
 
@@ -48,7 +59,7 @@ serve({
 }).then(() => console.log('done'))
 ```
 
-### All options
+#### All options
 ```js
 const dev = process.env.NODE_ENV !== 'production';
 const srcDir = './src';
@@ -82,7 +93,8 @@ serve({
     {filter: filename => filename.includes('src/img'), task: images},
   ],
 
-  afterBuild, // (noop) - function that is called after each build
+  afterBuild, // (noop) - function that is called after each build. First
+              // param is error if apllicable
 
   // servorOptions are passed to servor
   servorOptions: {port: 3000},
@@ -90,43 +102,33 @@ serve({
 ```
 
 ## How it works
-### 1. Static: Generate static HTML from Svelte-components and inject style.
+See [example/src](https://github.com/PKlknr/svatic/tree/master/example/src)
 
-See [example/pureHtml](https://github.com/PKlknr/svatic/tree/master/example/pureHtml)
+### 1. Static: Generate static HTML from Svelte-components and inject style.
 
 We include the whole html-document in a Svelte-component, so we don't need to crawl a site.
 
 Note: This depends on https://github.com/sveltejs/svelte/pull/4309
 
-
 ### 2. Enhance: Build hydrators and inject a snippet to load them into the generated html
-
-See [example/hydrate](https://github.com/PKlknr/svatic/tree/master/example/hydrate)
 
 This is heavily inspired by what svelvet does.
 
 ### 3. Run snowpack to copy dependencies
 
 ### 4. Transform paths
-turns .svelte into .svelte.js. Points at web_modules.
+Turns .svelte into .svelte.js. Points at web_modules.
 
+### 5. Watch
+Build a map of dependencies for each page. On change, rebuild the changed file and all files depending on it.
 
 ## Try it
 ```
-# until https://github.com/sveltejs/svelte/pull/4309 and
-# https://github.com/sveltejs/svelte/pull/4365 are merged:
-git clone https://github.com/PKlknr/svelte
-cd svelte
-git checkout for-svatic
-npm i && npm run build
-cd ..
-
 git clone https://github.com/PKlknr/svatic
 cd svatic
 npm i
-npm i ../svelte
 
-node example/pureHtml/build.js
-node example/hydrate/build.js
+node example/build.pureHtml.js
+node example/build.hydrate.js
 ```
 ... and have a look at example/*/out

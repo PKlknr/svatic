@@ -3,9 +3,20 @@
   "version": "1.0.0",
   "description": "Serverless SSR with svelte and snowpack",
   "main": "index.js",
+  "bin": "cli.js",
   "scripts": {
     "test:watch": "nodemon -e svelte,js -x npx tap -- -Rspec --no-esm --no-cov src/**/*.test.js example/**/*.test.js",
-    "test": "tap -Rspec --no-esm src/**/*.test.js example/**/*.test.js"
+    "test": "tap -Rspec --no-esm src/**/*.test.js example/**/*.test.js",
+    "format": "prettier --write '**/*.{js,svelte,css}' && eslint --fix '**/*.js'"
+  },
+  "lint-staged": {
+    "src/**/*.{js,svelte,css}": "prettier --write",
+    "src/**/*.{js,svelte}": "eslint --fix"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "author": "Patrick Klöckner",
   "license": "MIT",
@@ -15,17 +26,19 @@
     "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-svelte3": "^2.7.3",
-    "postcss-cli": "^7.1.0",
+    "husky": "^4.2.0",
+    "lint-staged": "^10.0.2",
     "prettier": "^1.19.1",
     "prettier-plugin-svelte": "^0.7.0",
     "tap": "^14.10.6"
   },
   "dependencies": {
+    "chokidar": "^3.3.1",
     "es-module-lexer": "^0.3.13",
     "require-relative": "^0.8.7",
     "servor": "github:PKlknr/servor#for-svatic",
     "snowpack": "^1.1.2",
-    "svelte": "github:PKlknr/svelte#for-svatic",
+    "svelte": "github:wix-incubator/wix-svelte#master",
     "terser": "^4.6.3"
   }
 }

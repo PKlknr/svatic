@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 module.exports = e => {
   console.log(e);
   if (e.frame) {

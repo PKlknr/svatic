@@ -1,7 +1,6 @@
 const {watch} = require('./watch');
 const servor = require('servor');
 const fs = require('fs');
-const path = require('path');
 
 const devServor = async opts => {
   const inst = await servor(opts);
@@ -36,8 +35,8 @@ module.exports.serve = ({
         pageMap,
         hooks,
 
-        afterBuild: () => {
-          afterBuild();
+        afterBuild: (...args) => {
+          afterBuild(...args);
           reload();
         },
       }),

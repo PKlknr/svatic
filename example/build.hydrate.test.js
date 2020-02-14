@@ -1,5 +1,5 @@
 const tap = require('tap');
-const {build, destDir} = require('./build.js');
+const {build, destDir} = require('./build.hydrate.js');
 const fs = require('fs');
 const glob = require('glob');
 const path = require('path');
@@ -8,16 +8,22 @@ const findOutputFiles = () => glob.sync(destDir + '/**/*', {nodir: true});
 
 const cleanOut = () =>
   Promise.all(findOutputFiles().map(fs.promises.unlink)).catch(err => {
+    /* eslint-disable-next-line no-console */
     console.log('Cannot remove outfile', err);
     throw err;
   });
 
 const expectedOutFiles = [
+  '/about.html',
+  '/About.svelte.js',
+  '/Foot.svelte.js',
   '/index.html',
   '/Index.svelte.js',
+  '/Page.svelte.js',
   '/web_modules/import-map.json',
   '/web_modules/svelte/internal.js',
-].map(x => path.join(__dirname, 'out', x));
+  '/web_modules/svelte/transition.js',
+].map(x => path.join(destDir, x));
 
 tap.test('hydrator example works', ({deepEqual, match}) =>
   cleanOut()
@@ -32,7 +38,7 @@ tap.test('hydrator example works', ({deepEqual, match}) =>
 
     .then(() =>
       fs.promises
-        .readFile(path.join(__dirname, '/out/index.html'), 'utf-8')
+        .readFile(path.join(destDir, '/index.html'), 'utf-8')
         .then(r => {
           match(
             r,
@@ -46,7 +52,7 @@ tap.test('hydrator example works', ({deepEqual, match}) =>
 
     .then(() =>
       fs.promises
-        .readFile(path.join(__dirname, '/out/Index.svelte.js'), 'utf-8')
+        .readFile(path.join(destDir, '/Index.svelte.js'), 'utf-8')
         .then(r => {
           match(r, 'dispatch_dev', 'Index.svelte.js: in dev-mode');
           match(
@@ -68,18 +74,23 @@ tap.test('hydrator:production', ({deepEqual, match, notMatch}) =>
     })
     .then(() => {
       deepEqual(
-        findOutputFiles(),
+        findOutputFiles().sort(),
         [
           ...expectedOutFiles,
-          '/home/pk/git/svatic/example/hydrate/out/web_modules/svelte/internal.js.map',
-        ],
+          ...[
+            '/web_modules/common/index-43a54b45.js',
+            '/web_modules/common/index-43a54b45.js.map',
+            '/web_modules/svelte/internal.js.map',
+            '/web_modules/svelte/transition.js.map',
+          ].map(x => path.join(destDir, x)),
+        ].sort(),
         'expected output files found',
       );
     })
 
     .then(() =>
       fs.promises
-        .readFile(path.join(__dirname, '/out/Index.svelte.js'), 'utf-8')
+        .readFile(path.join(destDir, '/Index.svelte.js'), 'utf-8')
         .then(r => {
           match(
             r,

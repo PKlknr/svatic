@@ -5,5 +5,7 @@
 
 <Page>
   <h1>Hello world</h1>
-  <button on:click="{() => console.log('Hello')}">Does nothing</button>
+  <button on:click="{() => console.log('Hello')}">
+    Does nothing when not hydrated
+  </button>
 </Page>
