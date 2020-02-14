@@ -36,17 +36,26 @@ const renderSvelteRollup = (srcDir, filename, props) =>
     ],
     external: ['svelte/internal'],
   }).then(bundle =>
-    bundle.generate({
-      format: 'cjs',
-    }),
-  ).then(gen =>{
-    // eslint-disable-next-line no-eval
-    const r = eval(gen.output[0].code).render(props)
-    return r 
-  }
-
-  );
-
+      bundle.generate({
+        format: 'cjs',
+      }),
+    )
+    .then(gen => {
+      try {
+        // eslint-disable-next-line no-eval
+        const r = eval(gen.output[0].code).render(props);
+        return r;
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(
+          gen.output[0].code
+            .split('\n')
+            .map((x, i) => String(i + 1) + ' | ' + x)
+            .join('\n'),
+        );
+        throw e;
+      }
+    });
 
 const RENDERER = renderSvelteRequire;
 
