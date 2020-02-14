@@ -1,41 +1,25 @@
 const {injectIntoHead} = require('.');
-const relative = require('require-relative');
 const path = require('path');
 const {rollup} = require('rollup');
 const rollupSveltePlugin = require('rollup-plugin-svelte');
-// for renderSvelteRollup
-// eslint-disable-next-line no-unused-vars
-const internal = require('svelte/internal');
+const resolve = require('@rollup/plugin-node-resolve');
+const {writeExternalSvelteDeps} = require('./svelteModules');
 
-require('svelte/register')({
-  dev: process.NODE_ENV === 'production',
-});
-
-// require look inside node_modules when path does not start with / or ./
-const requireablePath = p => (!path.isAbsolute(p) ? './' : '') + p;
-
-
-const renderSvelteRequire = (srcDir, filename, props) => {
-  const mod = relative.resolve(
-    requireablePath(path.join(srcDir, filename)),
-    process.cwd(),
-  );
-  /* eslint-disable-next-line global-require */
-  return relative(mod).default.render(props);
-};
-
-
-const renderSvelteRollup = (srcDir, filename, props) =>
+const renderSvelteRollup = (srcDir, destDir, filename, props) =>
   rollup({
-    input: (path.join(srcDir, filename)),
+    input: path.join(srcDir, filename),
     plugins: [
       rollupSveltePlugin({
         generate: 'ssr',
         hydratable: true,
+        dev: process.NODE_ENV !== 'production',
       }),
+      resolve(),
     ],
-    external: ['svelte/internal'],
-  }).then(bundle =>
+    external: [],
+  })
+    .then(bundle => writeExternalSvelteDeps(destDir, bundle).then(() => bundle))
+    .then(bundle =>
       bundle.generate({
         format: 'cjs',
       }),
@@ -57,14 +41,12 @@ const renderSvelteRollup = (srcDir, filename, props) =>
       }
     });
 
-const RENDERER = renderSvelteRequire;
-
-
-const renderSvelteWithStyle = async (srcDir, filename, props) => {
-  const rendered = await RENDERER(srcDir, filename, props);
-  return injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(
-    rendered.html,
+const renderSvelteWithStyle = async (srcDir, destDir, filename, props) => {
+  const rendered = await renderSvelteRollup(srcDir, destDir, filename, props);
+  return (
+    '<!DOCTYPE html>' +
+    injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(rendered.html)
   );
-}
+};
 
 module.exports.renderSvelteWithStyle = renderSvelteWithStyle;

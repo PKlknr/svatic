@@ -2,6 +2,7 @@ const path = require('path');
 const {runAllHooks} = require('./lib/hooks');
 const {renderPage} = require('./render');
 const maybeLog = require('./lib/maybeLog');
+const {hydrateExternalSvelteDeps} = require('./lib/svelteModules');
 const snowpack = require('./lib/snowpack');
 const {makeHydrators} = require('./hydrator');
 const {evalPageMap} = require('./lib/pageMap');
@@ -30,6 +31,7 @@ const maybeMinify = destDir =>
         .sync(destDir + '/**/!(*+(spec|test)).+(js|mjs|svelte)', {
           nodir: true,
         })
+        .filter(x => !x.includes('web_modules'))
         .map(minify),
     )
     : null;
@@ -57,6 +59,9 @@ const build = ({
     .then(pageMap => renderHtmlPagesInMap(srcDir, destDir, pageMap))
     .then(() => makeHydrators(srcDir, tmpDir, destDir))
     .then(() => runSnowpack(tmpDir, destDir))
+
+    .then(() => hydrateExternalSvelteDeps(destDir))
+
     .then(() => maybeMinify(destDir))
     .then(afterBuild)
     .then(() => maybeLog('full build done in', Date.now() - t, 'ms\n'))
