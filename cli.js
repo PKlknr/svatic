@@ -36,7 +36,7 @@ const pageMap = () => {
 const fs = require('fs');
 
 const copyFile = filename => {
-  const destPath = filename.replace(new RegExp('^src/'), 'dist/');
+  const destPath = filename.replace(new RegExp('^' + path.normalize(srcDir)), destDir);
   maybeLog('copying asset', filename, destPath, path.dirname(destPath));
   return fs.promises
     .mkdir(path.dirname(destPath), {recursive: true})
