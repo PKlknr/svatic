@@ -19,7 +19,6 @@ const maybeQueueHooks = (queue, hooks, changedFile) =>
 
 module.exports.watch = ({
   srcDir = './src',
-  tmpDir = './tmp',
   destDir = './dist',
   pageMap,
   hooks = [],
@@ -28,7 +27,7 @@ module.exports.watch = ({
   let pageDeps;
 
   const queue = makeQueue(afterBuild);
-  const buildPartial = makeBuildPartial(srcDir, tmpDir, destDir);
+  const buildPartial = makeBuildPartial(srcDir, destDir);
 
   const onFileEvent = changedFile => {
     maybeQueueHooks(queue, hooks, changedFile);
@@ -51,7 +50,7 @@ module.exports.watch = ({
     }
   };
 
-  build({srcDir, tmpDir, destDir, pageMap, hooks, afterBuild})
+  build({srcDir, destDir, pageMap, hooks, afterBuild})
     .then(() => evalPageMap(pageMap))
     .then(pageMap =>
       findPageDeps(

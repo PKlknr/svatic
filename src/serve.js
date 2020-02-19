@@ -19,7 +19,6 @@ const devServor = async opts => {
 
 module.exports.serve = ({
   srcDir = './src',
-  tmpDir = './tmp',
   destDir = './dist',
   pageMap,
   hooks = [],
@@ -30,7 +29,6 @@ module.exports.serve = ({
     devServor({root: destDir, ...servorOptions}).then(reload =>
       watch({
         srcDir,
-        tmpDir,
         destDir,
         pageMap,
         hooks,

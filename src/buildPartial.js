@@ -14,19 +14,17 @@ const findTouchedPages = (pageDeps, pageMap, filename) =>
     .map(([entry]) => entry)
     .map(p => findPageBySrcPath(pageMap, p));
 
-const maybeSnowpack = (tmpDir, destDir, entries) =>
+const maybeSnowpack = (destDir, entries) =>
   findPageDeps(destDir, entries).catch(e => {
     if (e.code === 'ENOENT') {
       maybeLog('new dependency - running snowpack');
-      return runSnowpack(tmpDir, destDir).then(() =>
-        findPageDeps(destDir, entries),
-      );
+      return runSnowpack(destDir).then(() => findPageDeps(destDir, entries));
     } else {
       throw e;
     }
   });
 
-const buildDependecy = (srcDir, tmpDir, destDir, pageMap, pageDeps, relToSrc) =>
+const buildDependecy = (srcDir, destDir, pageMap, pageDeps, relToSrc) =>
   // When a component changes, we must
   // * render the html of all pages this component is included in
   // * and the hydrator for this component
@@ -35,26 +33,22 @@ const buildDependecy = (srcDir, tmpDir, destDir, pageMap, pageDeps, relToSrc) =>
       renderPage(srcDir, destDir, page.src, page.dest, page.hydratable),
     ),
   )
-    .then(() =>
-      makeHydrators(srcDir, tmpDir, destDir, [path.join(srcDir, relToSrc)]),
-    )
+    .then(() => makeHydrators(srcDir, destDir, [path.join(srcDir, relToSrc)]))
     .then(() =>
       transformFiles(destDir, [path.join(destDir, relToSrc + '.js')]),
     );
 
-const buildPage = (srcDir, tmpDir, destDir, page) =>
+const buildPage = (srcDir, destDir, page) =>
   // When a page changes, we must
   // * render the html
   // * and the hydrator of that page
   renderPage(srcDir, destDir, page.src, page.dest, page.hydratable).then(() => {
     if (page.hydratable) {
-      return makeHydrators(srcDir, tmpDir, destDir, [
-        path.join(srcDir, page.src),
-      ]);
+      return makeHydrators(srcDir, destDir, [path.join(srcDir, page.src)]);
     }
   });
 
-module.exports.makeBuildPartial = (srcDir, tmpDir, destDir) => (
+module.exports.makeBuildPartial = (srcDir, destDir) => (
   pageMap,
   pageDeps,
   changedFile,
@@ -65,11 +59,10 @@ module.exports.makeBuildPartial = (srcDir, tmpDir, destDir) => (
 
   const page = findPageBySrcPath(pageMap, relToSrc);
   return (page
-    ? buildPage(srcDir, tmpDir, destDir, page)
-    : buildDependecy(srcDir, tmpDir, destDir, pageMap, pageDeps, relToSrc)
+    ? buildPage(srcDir, destDir, page)
+    : buildDependecy(srcDir, destDir, pageMap, pageDeps, relToSrc)
   ).then(() =>
     maybeSnowpack(
-      tmpDir,
       destDir,
       pageMap.map(({src}) => src),
     ),

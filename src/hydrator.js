@@ -38,9 +38,7 @@ module.exports.injectHydratorLoader = (input, props) =>
       document.head.appendChild(styles);
     </script>`);
 
-// we need tmpdir because snowpack would fail to run after transformation
-// (cannot find svelte/internal.js
-module.exports.makeHydrators = (srcDir, tmpDir, destDir, inputs) =>
+module.exports.makeHydrators = (srcDir, destDir, inputs) =>
   (inputs ? Promise.resolve(inputs) : findSvelteFiles(srcDir)).then(inputs =>
     svelteCompileAndWriteAll(srcDir, destDir, inputs),
   );
