@@ -2,13 +2,14 @@ const path = require('path');
 const {runAllHooks} = require('./lib/hooks');
 const {renderPage} = require('./render');
 const maybeLog = require('./lib/maybeLog');
-const {hydrateExternalSvelteDeps} = require('./lib/svelteModules');
 const snowpack = require('./lib/snowpack');
 const {makeHydrators} = require('./hydrator');
 const {evalPageMap} = require('./lib/pageMap');
 const glob = require('glob');
 const minify = require('./lib/minify');
 const fs = require('fs');
+const logError = require('./lib/logError');
+const {transformFiles} = require('./lib/hydratorBabelTransform');
 
 const renderHtmlPagesInMap = (srcDir, destDir, pageMap) =>
   Promise.all(
@@ -36,8 +37,6 @@ const maybeMinify = destDir =>
     )
     : null;
 
-const logError = require('./lib/logError');
-
 const build = ({
   srcDir = './src',
   tmpDir = './tmp',
@@ -55,13 +54,10 @@ const build = ({
     .then(() => fs.promises.mkdir(tmpDir, {recursive: true}))
     .then(() => runAllHooks(hooks))
     .then(() => evalPageMap(pageMap))
-
     .then(pageMap => renderHtmlPagesInMap(srcDir, destDir, pageMap))
     .then(() => makeHydrators(srcDir, tmpDir, destDir))
-    .then(() => runSnowpack(tmpDir, destDir))
-
-    .then(() => hydrateExternalSvelteDeps(destDir))
-
+    .then(() => runSnowpack(destDir, destDir))
+    .then(() => transformFiles(destDir))
     .then(() => maybeMinify(destDir))
     .then(afterBuild)
     .then(() => maybeLog('full build done in', Date.now() - t, 'ms\n'))

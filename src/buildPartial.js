@@ -6,17 +6,13 @@ const {findPageBySrcPath} = require('./lib/pageMap');
 const {renderPage} = require('./render');
 const {makeHydrators} = require('./hydrator');
 const maybeLog = require('./lib/maybeLog');
+const {transformFiles} = require('./lib/hydratorBabelTransform');
 
 const findTouchedPages = (pageDeps, pageMap, filename) =>
   pageDeps
     .filter(([, deps]) => deps.has(filename + '.js'))
     .map(([entry]) => entry)
     .map(p => findPageBySrcPath(pageMap, p));
-
-const bustRequireCache = srcDir =>
-  Object.keys(require.cache)
-    .filter(x => x.startsWith(path.resolve(srcDir)))
-    .forEach(x => delete require.cache[x]);
 
 const maybeSnowpack = (tmpDir, destDir, entries) =>
   findPageDeps(destDir, entries).catch(e => {
@@ -38,9 +34,13 @@ const buildDependecy = (srcDir, tmpDir, destDir, pageMap, pageDeps, relToSrc) =>
     findTouchedPages(pageDeps, pageMap, relToSrc).map(page =>
       renderPage(srcDir, destDir, page.src, page.dest, page.hydratable),
     ),
-  ).then(() =>
-    makeHydrators(srcDir, tmpDir, destDir, [path.join(srcDir, relToSrc)]),
-  );
+  )
+    .then(() =>
+      makeHydrators(srcDir, tmpDir, destDir, [path.join(srcDir, relToSrc)]),
+    )
+    .then(() =>
+      transformFiles(destDir, [path.join(destDir, relToSrc + '.js')]),
+    );
 
 const buildPage = (srcDir, tmpDir, destDir, page) =>
   // When a page changes, we must
@@ -64,7 +64,6 @@ module.exports.makeBuildPartial = (srcDir, tmpDir, destDir) => (
   maybeLog('file changed:', relToSrc);
 
   const page = findPageBySrcPath(pageMap, relToSrc);
-  bustRequireCache(srcDir);
   return (page
     ? buildPage(srcDir, tmpDir, destDir, page)
     : buildDependecy(srcDir, tmpDir, destDir, pageMap, pageDeps, relToSrc)

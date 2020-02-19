@@ -3,7 +3,6 @@ const path = require('path');
 const {rollup} = require('rollup');
 const rollupSveltePlugin = require('rollup-plugin-svelte');
 const resolve = require('@rollup/plugin-node-resolve');
-const {writeExternalSvelteDeps} = require('./svelteModules');
 
 const renderSvelteRollup = (srcDir, destDir, filename, props) =>
   rollup({
@@ -18,7 +17,6 @@ const renderSvelteRollup = (srcDir, destDir, filename, props) =>
     ],
     external: [],
   })
-    .then(bundle => writeExternalSvelteDeps(destDir, bundle).then(() => bundle))
     .then(bundle =>
       bundle.generate({
         format: 'cjs',
