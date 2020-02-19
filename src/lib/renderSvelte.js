@@ -45,7 +45,9 @@ const renderSvelteWithStyle = async (srcDir, destDir, filename, props) => {
   const rendered = await renderSvelteRollup(srcDir, destDir, filename, props);
   return (
     '<!DOCTYPE html>' +
-    injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(rendered.html)
+    injectIntoHead(`\n<style id="style-svatic">${rendered.css.code}</style>\n`)(
+      rendered.html,
+    )
   );
 };
 

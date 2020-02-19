@@ -39,11 +39,13 @@ module.exports.injectHydratorLoader = (input, props) =>
   injectIntoBody(`
     <script type="module">
       import Hydra from '${path.join('/', input)}.js';
-        new Hydra({
-          target: document.body,
-          hydrate: true,
-          props: ${JSON.stringify(props)}
-        });
+      const styles = document.getElementById('style-svatic');
+      new Hydra({
+        target: document,
+        hydrate: true,
+        props: ${JSON.stringify(props)}
+      });
+      document.head.appendChild(styles);
     </script>`);
 
 // we need tmpdir because snowpack would fail to run after transformation
