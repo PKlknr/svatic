@@ -37,7 +37,7 @@ npx svatic
 ```
 
 Now, when you create e.g. `src/Index.svelte`, it will create `dest/index.html` and 
-serve it wit live-reloading.
+serve it with live-reloading.
 
 
 ### lib
