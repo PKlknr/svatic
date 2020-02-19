@@ -21,7 +21,6 @@
   "author": "Patrick Klöckner",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^7.0.0",
     "babel-eslint": "^10.0.3",
     "css-tree": "^1.0.0-alpha.39",
     "eslint": "^6.8.0",
@@ -32,15 +31,16 @@
     "lint-staged": "^10.0.2",
     "prettier": "^1.19.1",
     "prettier-plugin-svelte": "^0.7.0",
-    "rollup-plugin-svelte": "^5.1.1",
     "tap": "^14.10.6"
   },
   "dependencies": {
+    "@rollup/plugin-node-resolve": "^7.1.1",
     "chokidar": "^3.3.1",
     "es-module-lexer": "^0.3.13",
+    "rollup-plugin-svelte": "^5.1.1",
     "servor": "github:PKlknr/servor#for-svatic",
-    "svelte": "github:wix-incubator/wix-svelte#master",
     "snowpack": "^1.4.0",
+    "svelte": "github:wix-incubator/wix-svelte#master",
     "terser": "^4.6.3"
   }
 }
