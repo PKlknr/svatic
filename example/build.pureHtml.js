@@ -8,13 +8,11 @@ const pageMap = [
 ];
 
 const srcDir = path.join(__dirname, 'src');
-const tmpDir = path.join(__dirname, 'tmp');
 const destDir = path.join(__dirname, 'out/pureHtml');
 
 const main = () =>
   build({
     srcDir,
-    tmpDir,
     destDir,
     pageMap,
   });
@@ -22,5 +20,5 @@ const main = () =>
 if (require.main === module) {
   main();
 } else {
-  module.exports = {build: main, pageMap, srcDir, tmpDir, destDir};
+  module.exports = {build: main, pageMap, srcDir, destDir};
 }

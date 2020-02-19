@@ -9,7 +9,6 @@ const findSvelteFiles = async srcDir =>
     .sync(srcDir + '/**/!(*+(spec|test)).+(svelte)', {nodir: true})
     .map(x => path.normalize(x));
 
-const transform = require('./lib/hydratorBabelTransform');
 const compileSvelteFile = require('./lib/compileSvelte');
 
 const destPath = (srcDir, destDir, input) =>
@@ -26,31 +25,20 @@ const svelteCompileAndWriteAll = (srcDir, destDir, inputs) =>
     ),
   );
 
-const transformAndRewriteAll = (srcDir, destDir, inputs, code) =>
-  Promise.all(
-    code.map((code, i) =>
-      transform(code).then(transformed =>
-        writeOutputFile(destPath(srcDir, destDir, inputs[i]), transformed),
-      ),
-    ),
-  );
-
 module.exports.injectHydratorLoader = (input, props) =>
   injectIntoBody(`
     <script type="module">
       import Hydra from '${path.join('/', input)}.js';
-        new Hydra({
-          target: document.body,
-          hydrate: true,
-          props: ${JSON.stringify(props)}
-        });
+      const styles = document.getElementById('style-svatic');
+      new Hydra({
+        target: document,
+        hydrate: true,
+        props: ${JSON.stringify(props)}
+      });
+      document.head.appendChild(styles);
     </script>`);
 
-// we need tmpdir because snowpack would fail to run after transformation
-// (cannot find svelte/internal.js
-module.exports.makeHydrators = (srcDir, tmpDir, destDir, inputs) =>
+module.exports.makeHydrators = (srcDir, destDir, inputs) =>
   (inputs ? Promise.resolve(inputs) : findSvelteFiles(srcDir)).then(inputs =>
-    svelteCompileAndWriteAll(srcDir, tmpDir, inputs).then(compiled =>
-      transformAndRewriteAll(tmpDir, destDir, inputs, compiled),
-    ),
+    svelteCompileAndWriteAll(srcDir, destDir, inputs),
   );

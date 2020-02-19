@@ -23,7 +23,7 @@ module.exports = ({
   if (glob.sync(include, {nodir: true}).length) {
     return exec(
       `${snowpackLocation} --include '${include}' --dest ${dest} ${
-        optimize ? '--optimize' : ''
+        0 && optimize ? '--optimize' : ''
       }`,
     ).then(({stdout, stderr}) => {
       if (stdout) {

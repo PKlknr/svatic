@@ -6,6 +6,7 @@ const {findPageBySrcPath} = require('./lib/pageMap');
 const {renderPage} = require('./render');
 const {makeHydrators} = require('./hydrator');
 const maybeLog = require('./lib/maybeLog');
+const {transformFiles} = require('./lib/hydratorBabelTransform');
 
 const findTouchedPages = (pageDeps, pageMap, filename) =>
   pageDeps
@@ -13,24 +14,17 @@ const findTouchedPages = (pageDeps, pageMap, filename) =>
     .map(([entry]) => entry)
     .map(p => findPageBySrcPath(pageMap, p));
 
-const bustRequireCache = srcDir =>
-  Object.keys(require.cache)
-    .filter(x => x.startsWith(path.resolve(srcDir)))
-    .forEach(x => delete require.cache[x]);
-
-const maybeSnowpack = (tmpDir, destDir, entries) =>
+const maybeSnowpack = (destDir, entries) =>
   findPageDeps(destDir, entries).catch(e => {
     if (e.code === 'ENOENT') {
       maybeLog('new dependency - running snowpack');
-      return runSnowpack(tmpDir, destDir).then(() =>
-        findPageDeps(destDir, entries),
-      );
+      return runSnowpack(destDir).then(() => findPageDeps(destDir, entries));
     } else {
       throw e;
     }
   });
 
-const buildDependecy = (srcDir, tmpDir, destDir, pageMap, pageDeps, relToSrc) =>
+const buildDependecy = (srcDir, destDir, pageMap, pageDeps, relToSrc) =>
   // When a component changes, we must
   // * render the html of all pages this component is included in
   // * and the hydrator for this component
@@ -38,23 +32,23 @@ const buildDependecy = (srcDir, tmpDir, destDir, pageMap, pageDeps, relToSrc) =>
     findTouchedPages(pageDeps, pageMap, relToSrc).map(page =>
       renderPage(srcDir, destDir, page.src, page.dest, page.hydratable),
     ),
-  ).then(() =>
-    makeHydrators(srcDir, tmpDir, destDir, [path.join(srcDir, relToSrc)]),
-  );
+  )
+    .then(() => makeHydrators(srcDir, destDir, [path.join(srcDir, relToSrc)]))
+    .then(() =>
+      transformFiles(destDir, [path.join(destDir, relToSrc + '.js')]),
+    );
 
-const buildPage = (srcDir, tmpDir, destDir, page) =>
+const buildPage = (srcDir, destDir, page) =>
   // When a page changes, we must
   // * render the html
   // * and the hydrator of that page
   renderPage(srcDir, destDir, page.src, page.dest, page.hydratable).then(() => {
     if (page.hydratable) {
-      return makeHydrators(srcDir, tmpDir, destDir, [
-        path.join(srcDir, page.src),
-      ]);
+      return makeHydrators(srcDir, destDir, [path.join(srcDir, page.src)]);
     }
   });
 
-module.exports.makeBuildPartial = (srcDir, tmpDir, destDir) => (
+module.exports.makeBuildPartial = (srcDir, destDir) => (
   pageMap,
   pageDeps,
   changedFile,
@@ -64,13 +58,11 @@ module.exports.makeBuildPartial = (srcDir, tmpDir, destDir) => (
   maybeLog('file changed:', relToSrc);
 
   const page = findPageBySrcPath(pageMap, relToSrc);
-  bustRequireCache(srcDir);
   return (page
-    ? buildPage(srcDir, tmpDir, destDir, page)
-    : buildDependecy(srcDir, tmpDir, destDir, pageMap, pageDeps, relToSrc)
+    ? buildPage(srcDir, destDir, page)
+    : buildDependecy(srcDir, destDir, pageMap, pageDeps, relToSrc)
   ).then(() =>
     maybeSnowpack(
-      tmpDir,
       destDir,
       pageMap.map(({src}) => src),
     ),

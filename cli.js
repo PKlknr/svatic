@@ -6,7 +6,6 @@ const path = require('path');
 const maybeLog = require('./src/lib/maybeLog');
 
 const srcDir = './src';
-const tmpDir = './tmp';
 const destDir = './dest';
 
 const findPages = () =>
@@ -47,7 +46,6 @@ const copyAllFiles = () => Promise.all(findAssets().map(x => copyFile(x)));
 
 serve({
   srcDir,
-  tmpDir,
   destDir,
   pageMap,
   hooks: [

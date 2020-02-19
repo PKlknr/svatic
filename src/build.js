@@ -8,6 +8,8 @@ const {evalPageMap} = require('./lib/pageMap');
 const glob = require('glob');
 const minify = require('./lib/minify');
 const fs = require('fs');
+const logError = require('./lib/logError');
+const {transformFiles} = require('./lib/hydratorBabelTransform');
 
 const renderHtmlPagesInMap = (srcDir, destDir, pageMap) =>
   Promise.all(
@@ -16,10 +18,10 @@ const renderHtmlPagesInMap = (srcDir, destDir, pageMap) =>
     ),
   );
 
-const runSnowpack = (tmpDir, destDir) =>
+const runSnowpack = destDir =>
   snowpack({
     optimize: process.env.NODE_ENV === 'production',
-    include: path.join(tmpDir + '/**/*'),
+    include: path.join(destDir + '/**/*'),
     dest: path.join(destDir, 'web_modules'),
   });
 
@@ -30,15 +32,13 @@ const maybeMinify = destDir =>
         .sync(destDir + '/**/!(*+(spec|test)).+(js|mjs|svelte)', {
           nodir: true,
         })
+        .filter(x => !x.includes('web_modules'))
         .map(minify),
     )
     : null;
 
-const logError = require('./lib/logError');
-
 const build = ({
   srcDir = './src',
-  tmpDir = './tmp',
   destDir = './dist',
   pageMap,
   hooks = [],
@@ -47,16 +47,14 @@ const build = ({
   const t = Date.now();
   return Promise.all([
     fs.promises.mkdir(srcDir, {recursive: true}),
-    fs.promises.mkdir(tmpDir, {recursive: true}),
     fs.promises.mkdir(destDir, {recursive: true}),
   ])
-    .then(() => fs.promises.mkdir(tmpDir, {recursive: true}))
     .then(() => runAllHooks(hooks))
     .then(() => evalPageMap(pageMap))
-
     .then(pageMap => renderHtmlPagesInMap(srcDir, destDir, pageMap))
-    .then(() => makeHydrators(srcDir, tmpDir, destDir))
-    .then(() => runSnowpack(tmpDir, destDir))
+    .then(() => makeHydrators(srcDir, destDir))
+    .then(() => runSnowpack(destDir))
+    .then(() => transformFiles(destDir))
     .then(() => maybeMinify(destDir))
     .then(afterBuild)
     .then(() => maybeLog('full build done in', Date.now() - t, 'ms\n'))

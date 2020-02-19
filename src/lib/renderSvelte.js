@@ -1,29 +1,51 @@
 const {injectIntoHead} = require('.');
-const relative = require('require-relative');
 const path = require('path');
+const {rollup} = require('rollup');
+const rollupSveltePlugin = require('rollup-plugin-svelte');
+const resolve = require('@rollup/plugin-node-resolve');
 
-require('svelte/register')({
-  dev: process.NODE_ENV === 'production',
-});
+const renderSvelteRollup = (srcDir, destDir, filename, props) =>
+  rollup({
+    input: path.join(srcDir, filename),
+    plugins: [
+      rollupSveltePlugin({
+        generate: 'ssr',
+        hydratable: true,
+        dev: process.NODE_ENV !== 'production',
+      }),
+      resolve(),
+    ],
+    external: [],
+  })
+    .then(bundle =>
+      bundle.generate({
+        format: 'cjs',
+      }),
+    )
+    .then(gen => {
+      try {
+        // eslint-disable-next-line no-eval
+        const r = eval(gen.output[0].code).render(props);
+        return r;
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(
+          gen.output[0].code
+            .split('\n')
+            .map((x, i) => String(i + 1) + ' | ' + x)
+            .join('\n'),
+        );
+        throw e;
+      }
+    });
 
-// require look inside node_modules when path does not start with / or ./
-const requireablePath = p => (!path.isAbsolute(p) ? './' : '') + p;
-
-const renderSvelte = (srcDir, filename, props) => {
-  const mod = relative.resolve(
-    requireablePath(path.join(srcDir, filename)),
-    process.cwd(),
-  );
-  /* eslint-disable-next-line global-require */
-  const Comp = relative(mod).default;
-
-  return Comp.render(props);
-};
-
-const renderSvelteWithStyle = async (srcDir, filename, props) => {
-  const rendered = renderSvelte(srcDir, filename, props);
-  return injectIntoHead(`\n<style>${rendered.css.code}</style>\n`)(
-    rendered.html,
+const renderSvelteWithStyle = async (srcDir, destDir, filename, props) => {
+  const rendered = await renderSvelteRollup(srcDir, destDir, filename, props);
+  return (
+    '<!DOCTYPE html>' +
+    injectIntoHead(`\n<style id="style-svatic">${rendered.css.code}</style>\n`)(
+      rendered.html,
+    )
   );
 };
 

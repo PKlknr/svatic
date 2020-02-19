@@ -1,5 +1,5 @@
 const {build} = require('..');
-const {srcDir, pageMap, tmpDir} = require('./build.pureHtml');
+const {srcDir, pageMap} = require('./build.pureHtml');
 const path = require('path');
 
 const destDir = path.join(__dirname, 'out/hydrate');
@@ -7,7 +7,6 @@ const destDir = path.join(__dirname, 'out/hydrate');
 const main = () =>
   build({
     srcDir,
-    tmpDir,
     destDir,
     pageMap: pageMap.map(x => ({
       ...x,

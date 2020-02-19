@@ -63,7 +63,6 @@ serve({
 ```js
 const dev = process.env.NODE_ENV !== 'production';
 const srcDir = './src';
-const tmpDir = './tmp';
 const destDir = dev ? './out' : './dist';
 
 const pageMap = [
@@ -80,7 +79,6 @@ const dirs = () => ...
 
 serve({
   srcDir,  // (./src)  - pageMap[].src is relative to this
-  tmpDir,  // (./tmp)  - see [#6](https://github.com/PKlknr/svatic/issues/6)
   destDir, // (./dist) - write here
   pageMap, // don't want to dictate a structure. May accept function in the future
 
