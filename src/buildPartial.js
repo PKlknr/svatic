@@ -42,11 +42,15 @@ const buildPage = (srcDir, destDir, page) =>
   // When a page changes, we must
   // * render the html
   // * and the hydrator of that page
-  renderPage(srcDir, destDir, page.src, page.dest, page.hydratable).then(() => {
-    if (page.hydratable) {
-      return makeHydrators(srcDir, destDir, [path.join(srcDir, page.src)]);
-    }
-  });
+  renderPage(srcDir, destDir, page.src, page.dest, page.hydratable)
+    .then(() => {
+      if (page.hydratable) {
+        return makeHydrators(srcDir, destDir, [path.join(srcDir, page.src)]);
+      }
+    })
+    .then(() =>
+      transformFiles(destDir, [path.join(destDir, page.src + '.js')]),
+    );
 
 module.exports.makeBuildPartial = (srcDir, destDir) => (
   pageMap,
