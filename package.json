@@ -41,6 +41,6 @@
     "servor": "github:PKlknr/servor#for-svatic",
     "snowpack": "^1.4.0",
     "svelte": "github:wix-incubator/wix-svelte#master",
-    "terser": "^4.6.3"
+    "terser": "^4.8.1"
   }
 }
